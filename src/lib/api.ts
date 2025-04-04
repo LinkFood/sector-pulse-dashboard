@@ -120,98 +120,235 @@ export interface SectorPerformance {
   change: number;
 }
 
-// Placeholder data (will be replaced with actual API calls)
-export const fetchMarketStatus = async (): Promise<MarketStatus> => {
-  // Placeholder - would fetch from `/v1/marketstatus/now` endpoint
-  return {
-    market: "open",
-    serverTime: new Date().toISOString(),
-    exchanges: {
-      nasdaq: {
-        name: "NASDAQ",
-        status: "open",
-        sessionOpen: "09:30:00",
-        sessionClose: "16:00:00",
-      },
-      nyse: {
-        name: "New York Stock Exchange",
-        status: "open",
-        sessionOpen: "09:30:00",
-        sessionClose: "16:00:00",
-      },
-    },
-    currencies: {
-      fx: {
-        name: "Forex",
-        status: "open",
-        currencySymbol: "$",
-      },
-    },
+interface PolygonMarketStatusResponse {
+  market: string;
+  serverTime: string;
+  exchanges: {
+    [key: string]: {
+      name: string;
+      status: string;
+      sessionOpen: string;
+      sessionClose: string;
+    };
   };
+  currencies: {
+    [key: string]: {
+      name: string;
+      status: string;
+      currencySymbol: string;
+    };
+  };
+}
+
+interface PolygonAggResponse {
+  ticker: string;
+  status: string;
+  queryCount: number;
+  resultsCount: number;
+  adjusted: boolean;
+  results: {
+    v: number;        // volume
+    vw: number;       // volume weighted price
+    o: number;        // open
+    c: number;        // close
+    h: number;        // high
+    l: number;        // low
+    t: number;        // timestamp
+    n: number;        // number of transactions
+  }[];
+  request_id: string;
+  count: number;
+}
+
+interface PolygonSnapshotResponse {
+  status: string;
+  results: {
+    [ticker: string]: {
+      ticker: string;
+      day: {
+        o: number;
+        h: number;
+        l: number;
+        c: number;
+        v: number;
+        vw: number;
+      };
+      lastQuote: {
+        P: number;  // ask price
+        S: number;  // ask size
+        p: number;  // bid price
+        s: number;  // bid size
+        t: number;  // timestamp
+      };
+      lastTrade: {
+        c: any[];   // conditions
+        i: number;  // trade ID
+        p: number;  // price
+        s: number;  // size
+        t: number;  // timestamp
+        x: number;  // exchange ID
+      };
+      min: {
+        av: number; // accumulated volume
+        o: number;  // open
+        h: number;  // high
+        l: number;  // low
+        c: number;  // close
+        v: number;  // volume
+        vw: number; // volume weighted
+      };
+      prevDay: {
+        o: number;  // open
+        h: number;  // high
+        l: number;  // low
+        c: number;  // close
+        v: number;  // volume
+        vw: number; // volume weighted
+      };
+    }
+  };
+}
+
+// Fetch market status from Polygon.io
+export const fetchMarketStatus = async (): Promise<MarketStatus> => {
+  try {
+    const response = await makeRequest<PolygonMarketStatusResponse>('/v1/marketstatus/now');
+    return {
+      market: response.market,
+      serverTime: response.serverTime,
+      exchanges: response.exchanges,
+      currencies: response.currencies
+    };
+  } catch (error) {
+    console.error("Failed to fetch market status:", error);
+    // Return a fallback status
+    return {
+      market: "unknown",
+      serverTime: new Date().toISOString(),
+      exchanges: {},
+      currencies: {}
+    };
+  }
 };
 
-// Mock data - in a real app these would fetch from the Polygon.io API
+// These are ETFs that track major indices
+const indexTickers = [
+  { ticker: "SPY", name: "S&P 500" },
+  { ticker: "DIA", name: "Dow Jones Industrial Average" },
+  { ticker: "QQQ", name: "Nasdaq Composite" },
+  { ticker: "IWM", name: "Russell 2000" }
+];
+
+// Fetch market indices from Polygon.io
 export const fetchMarketIndices = async (): Promise<MarketIndex[]> => {
-  // This would be `/v3/indices` in the real API
-  return [
-    {
-      ticker: "SPY",
-      name: "S&P 500",
+  try {
+    const tickers = indexTickers.map(index => index.ticker).join(',');
+    const response = await makeRequest<PolygonSnapshotResponse>(`/v2/snapshot/tickers?tickers=${tickers}`);
+    
+    return indexTickers.map(index => {
+      const ticker = index.ticker;
+      const tickerData = response.results[ticker];
+      
+      if (!tickerData) {
+        return {
+          ticker,
+          name: index.name,
+          market: "stocks",
+          locale: "us",
+          value: 0,
+          change: 0,
+          changePercent: 0,
+          lastUpdated: new Date().toISOString()
+        };
+      }
+      
+      const currentPrice = tickerData.lastTrade?.p || tickerData.day?.c || 0;
+      const previousClose = tickerData.prevDay?.c || 0;
+      const change = currentPrice - previousClose;
+      const changePercent = previousClose !== 0 ? (change / previousClose) * 100 : 0;
+      
+      return {
+        ticker,
+        name: index.name,
+        market: "stocks",
+        locale: "us",
+        value: currentPrice,
+        change,
+        changePercent,
+        lastUpdated: tickerData.lastTrade?.t 
+          ? new Date(tickerData.lastTrade.t).toISOString()
+          : new Date().toISOString()
+      };
+    });
+  } catch (error) {
+    console.error("Failed to fetch market indices:", error);
+    // Return fallback indices data
+    return indexTickers.map(index => ({
+      ticker: index.ticker,
+      name: index.name,
       market: "stocks",
       locale: "us",
-      value: 4780.23,
-      change: 32.5,
-      changePercent: 0.68,
-      lastUpdated: new Date().toISOString(),
-    },
-    {
-      ticker: "DIA",
-      name: "Dow Jones Industrial Average",
-      market: "stocks",
-      locale: "us",
-      value: 38564.12,
-      change: -42.76,
-      changePercent: -0.11,
-      lastUpdated: new Date().toISOString(),
-    },
-    {
-      ticker: "QQQ",
-      name: "Nasdaq Composite",
-      market: "stocks",
-      locale: "us",
-      value: 16741.52,
-      change: 180.95,
-      changePercent: 1.09,
-      lastUpdated: new Date().toISOString(),
-    },
-    {
-      ticker: "IWM",
-      name: "Russell 2000",
-      market: "stocks",
-      locale: "us",
-      value: 2007.31,
-      change: -5.41,
-      changePercent: -0.27,
-      lastUpdated: new Date().toISOString(),
-    },
-  ];
+      value: 0,
+      change: 0,
+      changePercent: 0,
+      lastUpdated: new Date().toISOString()
+    }));
+  }
 };
 
-// Mock sector performance data
+// Map of sector ETFs to sector names
+const sectorETFs = [
+  { ticker: "XLK", sector: "Technology" },
+  { ticker: "XLV", sector: "Healthcare" },
+  { ticker: "XLF", sector: "Financials" },
+  { ticker: "XLY", sector: "Consumer Discretionary" },
+  { ticker: "XLC", sector: "Communication Services" },
+  { ticker: "XLI", sector: "Industrials" },
+  { ticker: "XLP", sector: "Consumer Staples" },
+  { ticker: "XLE", sector: "Energy" },
+  { ticker: "XLU", sector: "Utilities" },
+  { ticker: "XLRE", sector: "Real Estate" },
+  { ticker: "XLB", sector: "Materials" }
+];
+
+// Fetch sector performance using sector ETFs from Polygon.io
 export const fetchSectorPerformance = async (): Promise<SectorPerformance[]> => {
-  return [
-    { sector: "Technology", performance: 1.24, change: 0.35 },
-    { sector: "Healthcare", performance: 0.78, change: -0.12 },
-    { sector: "Financials", performance: -0.41, change: -0.68 },
-    { sector: "Consumer Discretionary", performance: 0.92, change: 0.23 },
-    { sector: "Communication Services", performance: 1.56, change: 0.45 },
-    { sector: "Industrials", performance: 0.31, change: 0.08 },
-    { sector: "Consumer Staples", performance: -0.18, change: -0.27 },
-    { sector: "Energy", performance: -1.23, change: -0.85 },
-    { sector: "Utilities", performance: -0.53, change: -0.22 },
-    { sector: "Real Estate", performance: 0.12, change: 0.04 },
-    { sector: "Materials", performance: -0.37, change: -0.19 },
-  ];
+  try {
+    const tickers = sectorETFs.map(etf => etf.ticker).join(',');
+    const response = await makeRequest<PolygonSnapshotResponse>(`/v2/snapshot/tickers?tickers=${tickers}`);
+    
+    return sectorETFs.map(etf => {
+      const ticker = etf.ticker;
+      const tickerData = response.results[ticker];
+      
+      if (!tickerData) {
+        return {
+          sector: etf.sector,
+          performance: 0,
+          change: 0
+        };
+      }
+      
+      const currentPrice = tickerData.lastTrade?.p || tickerData.day?.c || 0;
+      const previousClose = tickerData.prevDay?.c || 0;
+      const change = currentPrice - previousClose;
+      const performance = previousClose !== 0 ? (change / previousClose) * 100 : 0;
+      
+      return {
+        sector: etf.sector,
+        performance,
+        change
+      };
+    });
+  } catch (error) {
+    console.error("Failed to fetch sector performance:", error);
+    // Return fallback sector data
+    return sectorETFs.map(etf => ({
+      sector: etf.sector,
+      performance: 0,
+      change: 0
+    }));
+  }
 };
 
 // Watchlist types and functions
@@ -223,45 +360,77 @@ export interface WatchlistItem {
   changePercent: number;
 }
 
+// Get stock name from symbol (simplified version)
+const getStockName = (symbol: string): string => {
+  const commonStocks: Record<string, string> = {
+    "AAPL": "Apple Inc.",
+    "MSFT": "Microsoft Corporation",
+    "GOOGL": "Alphabet Inc.",
+    "AMZN": "Amazon.com Inc.",
+    "NVDA": "NVIDIA Corporation",
+    "META": "Meta Platforms Inc.",
+    "TSLA": "Tesla, Inc.",
+    "NFLX": "Netflix, Inc.",
+    "DIS": "The Walt Disney Company",
+    "BA": "Boeing Company",
+  };
+  
+  return commonStocks[symbol] || symbol;
+};
+
+// Fetch watchlist data from Polygon.io
 export const fetchWatchlistData = async (symbols: string[]): Promise<WatchlistItem[]> => {
-  // This would call the real-time quotes endpoint
-  return [
-    {
-      symbol: "AAPL",
-      name: "Apple Inc.",
-      price: 182.63,
-      change: 3.26,
-      changePercent: 1.82,
-    },
-    {
-      symbol: "MSFT",
-      name: "Microsoft Corporation",
-      price: 415.42,
-      change: 5.31,
-      changePercent: 1.29,
-    },
-    {
-      symbol: "GOOGL",
-      name: "Alphabet Inc.",
-      price: 174.13,
-      change: 1.45,
-      changePercent: 0.84,
-    },
-    {
-      symbol: "AMZN",
-      name: "Amazon.com Inc.",
-      price: 178.87,
-      change: 2.13,
-      changePercent: 1.2,
-    },
-    {
-      symbol: "NVDA",
-      name: "NVIDIA Corporation",
-      price: 924.79,
-      change: 18.43,
-      changePercent: 2.03,
-    },
-  ];
+  if (!symbols || symbols.length === 0) {
+    // Default watchlist for demonstration
+    symbols = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA"];
+  }
+  
+  try {
+    const tickers = symbols.join(',');
+    const response = await makeRequest<PolygonSnapshotResponse>(`/v2/snapshot/tickers?tickers=${tickers}`);
+    
+    return symbols.map(symbol => {
+      const tickerData = response.results[symbol];
+      
+      if (!tickerData) {
+        return {
+          symbol,
+          name: getStockName(symbol),
+          price: 0,
+          change: 0,
+          changePercent: 0
+        };
+      }
+      
+      const currentPrice = tickerData.lastTrade?.p || tickerData.day?.c || 0;
+      const previousClose = tickerData.prevDay?.c || 0;
+      const change = currentPrice - previousClose;
+      const changePercent = previousClose !== 0 ? (change / previousClose) * 100 : 0;
+      
+      return {
+        symbol,
+        name: getStockName(symbol),
+        price: currentPrice,
+        change,
+        changePercent
+      };
+    });
+  } catch (error) {
+    console.error("Failed to fetch watchlist data:", error);
+    // Return fallback watchlist data
+    return symbols.map(symbol => ({
+      symbol,
+      name: getStockName(symbol),
+      price: 0,
+      change: 0,
+      changePercent: 0
+    }));
+  }
+};
+
+// Helper function to properly format the API key parameter for Polygon.io
+const formatApiKeyParam = (apiKey: string): string => {
+  return `apiKey=${apiKey}`;
 };
 
 export default {

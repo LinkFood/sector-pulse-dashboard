@@ -7,7 +7,8 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { BarChart3, Settings } from "lucide-react";
+import { BarChart3, Settings, Wrench } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function AppSidebar() {
   return (
@@ -23,10 +24,16 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-          <a href="#">
+          <Link to="/api-config">
+            <Wrench className="mr-2 h-4 w-4" />
+            API Configuration
+          </Link>
+        </Button>
+        <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+          <Link to="/settings">
             <Settings className="mr-2 h-4 w-4" />
             Settings
-          </a>
+          </Link>
         </Button>
       </SidebarFooter>
     </Sidebar>

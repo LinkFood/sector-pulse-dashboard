@@ -17,13 +17,21 @@ import TechnicalsPage from "./pages/technicals";
 import FiltersPage from "./pages/filters";
 import ApiConfigPage from "./pages/api-config";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
-      <Sonner />
+      <Sonner position="top-right" closeButton={true} richColors={true} />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />

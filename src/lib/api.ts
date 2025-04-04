@@ -1,14 +1,14 @@
+
 import axios from 'axios';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 // Initialize Axios instance with default configuration
 const api = axios.create({
   baseURL: 'https://api.polygon.io', 
-  timeout: 10000,
+  timeout: 15000, // Increased timeout for reliability
 });
 
 // Placeholder for API key - would come from environment variables in production
-// In a real app, you would store this in a .env file or use a secret manager
 let API_KEY = '';
 
 export const setApiKey = (key: string) => {
@@ -36,11 +36,14 @@ const checkApiKey = () => {
 const makeRequest = async <T>(url: string, params: Record<string, any> = {}): Promise<T> => {
   try {
     const apiKey = checkApiKey();
-    console.log('API Request Details:', {
+    
+    // Debug logs to see what's being sent
+    console.log('API Request:', {
       url,
-      params: { ...params, apiKey: apiKey ? '****' : 'No API Key' }
+      params: { ...params, apiKey: '****' }
     });
 
+    // Make the request with apiKey properly formatted in the query parameters
     const response = await api.get<T>(url, {
       params: {
         ...params,
@@ -48,37 +51,30 @@ const makeRequest = async <T>(url: string, params: Record<string, any> = {}): Pr
       },
     });
 
-    console.log('API Response:', response.data);
+    console.log('API Response Status:', response.status);
+    console.log('API Response Headers:', response.headers);
+    console.log('API Response Data:', response.data);
+    
     return response.data;
   } catch (error) {
-    console.error('Full API Error:', error);
+    console.error('API Error:', error);
     
     if (axios.isAxiosError(error)) {
       console.error('Axios Error Details:', {
         status: error.response?.status,
         data: error.response?.data,
-        headers: error.response?.headers
+        config: error.config
       });
 
-      if (error.response?.status === 401) {
-        toast({
-          title: 'API Key Error',
-          description: 'Your API key is invalid or has expired. Please check your Polygon.io API key.',
-          variant: 'destructive',
-        });
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        toast.error('API Key Error: Your API key is invalid or has expired.');
+      } else if (error.response?.status === 429) {
+        toast.error('Rate limit exceeded. Please try again later.');
       } else {
-        toast({
-          title: 'API Error',
-          description: `Request failed: ${error.message}. Check console for details.`,
-          variant: 'destructive',
-        });
+        toast.error(`API Error: ${error.message}. Check console for details.`);
       }
     } else {
-      toast({
-        title: 'Unexpected Error',
-        description: 'An unknown error occurred during the API request.',
-        variant: 'destructive',
-      });
+      toast.error('Unexpected error during API request.');
     }
     throw error;
   }
@@ -154,73 +150,55 @@ interface PolygonMarketStatusResponse {
   };
 }
 
-interface PolygonAggResponse {
-  ticker: string;
-  status: string;
-  queryCount: number;
-  resultsCount: number;
-  adjusted: boolean;
-  results: {
-    v: number;        // volume
-    vw: number;       // volume weighted price
-    o: number;        // open
-    c: number;        // close
-    h: number;        // high
-    l: number;        // low
-    t: number;        // timestamp
-    n: number;        // number of transactions
-  }[];
-  request_id: string;
-  count: number;
-}
-
 interface PolygonSnapshotResponse {
   status: string;
-  results: {
-    [ticker: string]: {
-      ticker: string;
-      day: {
-        o: number;
-        h: number;
-        l: number;
-        c: number;
-        v: number;
-        vw: number;
-      };
-      lastQuote: {
-        P: number;  // ask price
-        S: number;  // ask size
-        p: number;  // bid price
-        s: number;  // bid size
-        t: number;  // timestamp
-      };
-      lastTrade: {
-        c: any[];   // conditions
-        i: number;  // trade ID
-        p: number;  // price
-        s: number;  // size
-        t: number;  // timestamp
-        x: number;  // exchange ID
-      };
-      min: {
-        av: number; // accumulated volume
-        o: number;  // open
-        h: number;  // high
-        l: number;  // low
-        c: number;  // close
-        v: number;  // volume
-        vw: number; // volume weighted
-      };
-      prevDay: {
-        o: number;  // open
-        h: number;  // high
-        l: number;  // low
-        c: number;  // close
-        v: number;  // volume
-        vw: number; // volume weighted
-      };
-    }
-  };
+  request_id: string;
+  tickers: Array<{
+    day: {
+      c: number;
+      h: number;
+      l: number;
+      o: number;
+      v: number;
+      vw: number;
+    };
+    lastQuote: {
+      P: number;
+      S: number;
+      p: number;
+      s: number;
+      t: number;
+    };
+    lastTrade: {
+      c: number[];
+      i: string;
+      p: number;
+      s: number;
+      t: number;
+      x: number;
+    };
+    min: {
+      av: number;
+      c: number;
+      h: number;
+      l: number;
+      o: number;
+      v: number;
+      vw: number;
+    };
+    prevDay: {
+      c: number;
+      h: number;
+      l: number;
+      o: number;
+      v: number;
+      vw: number;
+    };
+    ticker: string;
+    todaysChange: number;
+    todaysChangePerc: number;
+    updated: number;
+  }>
 }
 
 // Fetch market status from Polygon.io
@@ -235,7 +213,6 @@ export const fetchMarketStatus = async (): Promise<MarketStatus> => {
     };
   } catch (error) {
     console.error("Failed to fetch market status:", error);
-    // Return a fallback status
     return {
       market: "unknown",
       serverTime: new Date().toISOString(),
@@ -253,50 +230,44 @@ const indexTickers = [
   { ticker: "IWM", name: "Russell 2000" }
 ];
 
-// Fetch market indices from Polygon.io
+// Fetch market indices from Polygon.io using the snapshot endpoint
 export const fetchMarketIndices = async (): Promise<MarketIndex[]> => {
   try {
     const tickers = indexTickers.map(index => index.ticker).join(',');
-    const response = await makeRequest<PolygonSnapshotResponse>(`/v2/snapshot/tickers?tickers=${tickers}`);
+    const response = await makeRequest<PolygonSnapshotResponse>(`/v2/snapshot/locale/us/markets/stocks/tickers?tickers=${tickers}`);
     
-    return indexTickers.map(index => {
-      const ticker = index.ticker;
-      const tickerData = response.results[ticker];
-      
-      if (!tickerData) {
-        return {
-          ticker,
-          name: index.name,
-          market: "stocks",
-          locale: "us",
-          value: 0,
-          change: 0,
-          changePercent: 0,
-          lastUpdated: new Date().toISOString()
-        };
-      }
-      
-      const currentPrice = tickerData.lastTrade?.p || tickerData.day?.c || 0;
-      const previousClose = tickerData.prevDay?.c || 0;
-      const change = currentPrice - previousClose;
-      const changePercent = previousClose !== 0 ? (change / previousClose) * 100 : 0;
-      
-      return {
-        ticker,
+    if (!response.tickers || response.tickers.length === 0) {
+      console.error('No ticker data returned from API');
+      return indexTickers.map(index => ({
+        ticker: index.ticker,
         name: index.name,
         market: "stocks",
         locale: "us",
-        value: currentPrice,
-        change,
-        changePercent,
-        lastUpdated: tickerData.lastTrade?.t 
-          ? new Date(tickerData.lastTrade.t).toISOString()
-          : new Date().toISOString()
+        value: 0,
+        change: 0,
+        changePercent: 0,
+        lastUpdated: new Date().toISOString()
+      }));
+    }
+    
+    return response.tickers.map(tickerData => {
+      const indexInfo = indexTickers.find(i => i.ticker === tickerData.ticker);
+      
+      return {
+        ticker: tickerData.ticker,
+        name: indexInfo?.name || tickerData.ticker,
+        market: "stocks",
+        locale: "us",
+        value: tickerData.lastTrade?.p || tickerData.day?.c || 0,
+        change: tickerData.todaysChange,
+        changePercent: tickerData.todaysChangePerc,
+        lastUpdated: tickerData.updated ? new Date(tickerData.updated).toISOString() : new Date().toISOString()
       };
     });
   } catch (error) {
     console.error("Failed to fetch market indices:", error);
-    // Return fallback indices data
+    
+    // Return fallback data
     return indexTickers.map(index => ({
       ticker: index.ticker,
       name: index.name,
@@ -329,34 +300,30 @@ const sectorETFs = [
 export const fetchSectorPerformance = async (): Promise<SectorPerformance[]> => {
   try {
     const tickers = sectorETFs.map(etf => etf.ticker).join(',');
-    const response = await makeRequest<PolygonSnapshotResponse>(`/v2/snapshot/tickers?tickers=${tickers}`);
+    const response = await makeRequest<PolygonSnapshotResponse>(`/v2/snapshot/locale/us/markets/stocks/tickers?tickers=${tickers}`);
     
-    return sectorETFs.map(etf => {
-      const ticker = etf.ticker;
-      const tickerData = response.results[ticker];
-      
-      if (!tickerData) {
-        return {
-          sector: etf.sector,
-          performance: 0,
-          change: 0
-        };
-      }
-      
-      const currentPrice = tickerData.lastTrade?.p || tickerData.day?.c || 0;
-      const previousClose = tickerData.prevDay?.c || 0;
-      const change = currentPrice - previousClose;
-      const performance = previousClose !== 0 ? (change / previousClose) * 100 : 0;
+    if (!response.tickers || response.tickers.length === 0) {
+      console.error('No sector data returned from API');
+      return sectorETFs.map(etf => ({
+        sector: etf.sector,
+        performance: 0,
+        change: 0
+      }));
+    }
+    
+    return response.tickers.map(tickerData => {
+      const sectorInfo = sectorETFs.find(s => s.ticker === tickerData.ticker);
       
       return {
-        sector: etf.sector,
-        performance,
-        change
+        sector: sectorInfo?.sector || tickerData.ticker,
+        performance: tickerData.todaysChangePerc,
+        change: tickerData.todaysChange
       };
     });
   } catch (error) {
     console.error("Failed to fetch sector performance:", error);
-    // Return fallback sector data
+    
+    // Return fallback data
     return sectorETFs.map(etf => ({
       sector: etf.sector,
       performance: 0,
@@ -401,10 +368,26 @@ export const fetchWatchlistData = async (symbols: string[]): Promise<WatchlistIt
   
   try {
     const tickers = symbols.join(',');
-    const response = await makeRequest<PolygonSnapshotResponse>(`/v2/snapshot/tickers?tickers=${tickers}`);
+    const response = await makeRequest<PolygonSnapshotResponse>(`/v2/snapshot/locale/us/markets/stocks/tickers?tickers=${tickers}`);
+    
+    if (!response.tickers || response.tickers.length === 0) {
+      console.error('No watchlist data returned from API');
+      return symbols.map(symbol => ({
+        symbol,
+        name: getStockName(symbol),
+        price: 0,
+        change: 0,
+        changePercent: 0
+      }));
+    }
+    
+    // Create a map for quick lookup
+    const tickerDataMap = new Map(
+      response.tickers.map(ticker => [ticker.ticker, ticker])
+    );
     
     return symbols.map(symbol => {
-      const tickerData = response.results[symbol];
+      const tickerData = tickerDataMap.get(symbol);
       
       if (!tickerData) {
         return {
@@ -416,22 +399,18 @@ export const fetchWatchlistData = async (symbols: string[]): Promise<WatchlistIt
         };
       }
       
-      const currentPrice = tickerData.lastTrade?.p || tickerData.day?.c || 0;
-      const previousClose = tickerData.prevDay?.c || 0;
-      const change = currentPrice - previousClose;
-      const changePercent = previousClose !== 0 ? (change / previousClose) * 100 : 0;
-      
       return {
         symbol,
         name: getStockName(symbol),
-        price: currentPrice,
-        change,
-        changePercent
+        price: tickerData.lastTrade?.p || tickerData.day?.c || 0,
+        change: tickerData.todaysChange,
+        changePercent: tickerData.todaysChangePerc
       };
     });
   } catch (error) {
     console.error("Failed to fetch watchlist data:", error);
-    // Return fallback watchlist data
+    
+    // Return fallback data
     return symbols.map(symbol => ({
       symbol,
       name: getStockName(symbol),
@@ -440,11 +419,6 @@ export const fetchWatchlistData = async (symbols: string[]): Promise<WatchlistIt
       changePercent: 0
     }));
   }
-};
-
-// Helper function to properly format the API key parameter for Polygon.io
-const formatApiKeyParam = (apiKey: string): string => {
-  return `apiKey=${apiKey}`;
 };
 
 export default {

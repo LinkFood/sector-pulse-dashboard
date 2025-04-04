@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner"; 
 import DashboardLayout from "@/layouts/dashboard-layout";
 import MarketIndicesCard from "@/components/market/market-indices-card";
 import SectorHeatmap from "@/components/market/sector-heatmap";
@@ -13,6 +13,7 @@ import {
 } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const [indices, setIndices] = useState([]);
@@ -20,7 +21,6 @@ const Index = () => {
   const [watchlist, setWatchlist] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
-  const { toast } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,39 +30,50 @@ const Index = () => {
         // Check if API key is set
         const apiKey = getApiKey();
         if (!apiKey) {
-          toast({
-            title: "API Key Required",
-            description: "Please enter your Polygon.io API key in the sidebar.",
-            variant: "destructive",
-          });
+          toast.error("API Key Required. Please configure your Polygon.io API key.");
           setIsLoading(false);
           return;
         }
 
-        // Fetch data in parallel
-        const [indicesData, sectorsData, watchlistData] = await Promise.all([
-          fetchMarketIndices(),
-          fetchSectorPerformance(),
-          fetchWatchlistData([]), // Empty array to use default watchlist
-        ]);
-
-        setIndices(indicesData);
-        setSectors(sectorsData);
-        setWatchlist(watchlistData);
+        console.log("Fetching market data...");
+        
+        // Fetch data in parallel with proper error handling for each request
+        try {
+          const indicesData = await fetchMarketIndices();
+          console.log("Indices data:", indicesData);
+          setIndices(indicesData);
+        } catch (error) {
+          console.error("Failed to fetch indices:", error);
+          toast.error("Failed to load market indices data");
+        }
+        
+        try {
+          const sectorsData = await fetchSectorPerformance();
+          console.log("Sectors data:", sectorsData);
+          setSectors(sectorsData);
+        } catch (error) {
+          console.error("Failed to fetch sectors:", error);
+          toast.error("Failed to load sector performance data");
+        }
+        
+        try {
+          const watchlistData = await fetchWatchlistData([]);
+          console.log("Watchlist data:", watchlistData);
+          setWatchlist(watchlistData);
+        } catch (error) {
+          console.error("Failed to fetch watchlist:", error);
+          toast.error("Failed to load watchlist data");
+        }
       } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-        toast({
-          title: "Failed to load market data",
-          description: "Please check your API key and connection.",
-          variant: "destructive",
-        });
+        console.error("Error in main fetch operation:", error);
+        toast.error("Error loading dashboard data");
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [toast, retryCount]);
+  }, [retryCount]);
 
   const handleRetry = () => {
     setRetryCount(prev => prev + 1);
@@ -85,8 +96,11 @@ const Index = () => {
               <div className="bg-muted p-6 rounded-lg text-center">
                 <h3 className="text-xl font-semibold mb-2">API Key Required</h3>
                 <p className="mb-4">
-                  Please enter your Polygon.io API key in the sidebar to fetch market data.
+                  Please configure your Polygon.io API key to fetch market data.
                 </p>
+                <Button asChild>
+                  <Link to="/api-config">Configure API Key</Link>
+                </Button>
               </div>
             ) : (
               <>
@@ -101,9 +115,14 @@ const Index = () => {
                     <p className="mb-4">
                       There was an issue retrieving market data. Please check your API key or try again.
                     </p>
-                    <Button variant="outline" onClick={handleRetry}>
-                      Retry
-                    </Button>
+                    <div className="flex flex-col sm:flex-row justify-center gap-4">
+                      <Button variant="outline" onClick={handleRetry}>
+                        Retry
+                      </Button>
+                      <Button asChild>
+                        <Link to="/api-config">Check API Configuration</Link>
+                      </Button>
+                    </div>
                   </div>
                 )}
               </>

@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import DashboardLayout from "@/layouts/dashboard-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,6 @@ const ApiConfigPage = () => {
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState<string>('Checking API connection...');
-  const { toast } = useToast();
 
   useEffect(() => {
     // Check if API key is already stored
@@ -25,6 +24,9 @@ const ApiConfigPage = () => {
     if (storedKey) {
       setApiKeyState(storedKey);
       checkApiConnection(storedKey);
+    } else {
+      setStatus('error');
+      setMessage('No API key has been configured');
     }
   }, []);
 
@@ -81,26 +83,15 @@ const ApiConfigPage = () => {
         setApiKey(apiKey);
         setIsValid(true);
         
-        toast({
-          title: "API Key Saved",
-          description: "Your Polygon.io API key has been saved and verified.",
-        });
+        toast.success('API key saved and verified successfully');
       } else {
         setIsValid(false);
-        toast({
-          title: "API Key Error",
-          description: "The API key could not be validated with Polygon.io.",
-          variant: "destructive",
-        });
+        toast.error('The API key could not be validated with Polygon.io');
       }
     } catch (error) {
       setIsValid(false);
       console.error("Error saving API key:", error);
-      toast({
-        title: "Error",
-        description: "Failed to save API key",
-        variant: "destructive",
-      });
+      toast.error('Failed to save API key');
     } finally {
       setIsValidating(false);
     }
@@ -229,7 +220,7 @@ const ApiConfigPage = () => {
                   <h3>Key Endpoints Used</h3>
                   <ul className="list-disc pl-6 space-y-2">
                     <li><code>/v1/marketstatus/now</code> - Current market status</li>
-                    <li><code>/v2/snapshot/tickers</code> - Current snapshot of ticker data</li>
+                    <li><code>/v2/snapshot/locale/us/markets/stocks/tickers</code> - Current snapshot of ticker data</li>
                   </ul>
                   
                   <h3>API Limits</h3>

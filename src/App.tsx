@@ -15,6 +15,7 @@ import ScreenerPage from "./pages/screener";
 import WatchlistPage from "./pages/watchlist";
 import TechnicalsPage from "./pages/technicals";
 import FiltersPage from "./pages/filters";
+import ApiConfigPage from "./pages/api-config";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/watchlist" element={<WatchlistPage />} />
           <Route path="/technicals" element={<TechnicalsPage />} />
           <Route path="/filters" element={<FiltersPage />} />
+          <Route path="/api-config" element={<ApiConfigPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

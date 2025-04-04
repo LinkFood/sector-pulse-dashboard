@@ -2,7 +2,6 @@
 import { AppHeader } from "@/components/layout/app-header";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { MarketStatusIndicator } from "@/components/layout/market-status";
-import { ApiStatusIndicator } from "@/components/layout/api-status";
 import {
   Sidebar,
   SidebarProvider,
@@ -24,7 +23,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <h2 className="text-2xl font-semibold">Market Overview</h2>
               <MarketStatusIndicator />
             </div>
-            <ApiStatusIndicator />
             {children}
           </main>
           <footer className="border-t bg-muted/40 p-4">

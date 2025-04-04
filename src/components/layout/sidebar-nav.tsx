@@ -12,6 +12,7 @@ import {
   Search,
   Star,
   Activity,
+  Shield,
 } from "lucide-react";
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
@@ -69,6 +70,11 @@ export function SidebarNav({
       href: "/filters",
       title: "Custom Filters",
       icon: ListFilter,
+    },
+    {
+      href: "/api-config",
+      title: "API Configuration",
+      icon: Shield,
     },
   ];
 

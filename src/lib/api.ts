@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import { toast } from '@/components/ui/use-toast';
 
@@ -37,32 +36,47 @@ const checkApiKey = () => {
 const makeRequest = async <T>(url: string, params: Record<string, any> = {}): Promise<T> => {
   try {
     const apiKey = checkApiKey();
+    console.log('API Request Details:', {
+      url,
+      params: { ...params, apiKey: apiKey ? '****' : 'No API Key' }
+    });
+
     const response = await api.get<T>(url, {
       params: {
         ...params,
         apiKey,
       },
     });
+
+    console.log('API Response:', response.data);
     return response.data;
   } catch (error) {
+    console.error('Full API Error:', error);
+    
     if (axios.isAxiosError(error)) {
+      console.error('Axios Error Details:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        headers: error.response?.headers
+      });
+
       if (error.response?.status === 401) {
         toast({
           title: 'API Key Error',
-          description: 'Your API key is invalid or has expired',
+          description: 'Your API key is invalid or has expired. Please check your Polygon.io API key.',
           variant: 'destructive',
         });
       } else {
         toast({
           title: 'API Error',
-          description: error.message || 'Failed to fetch data',
+          description: `Request failed: ${error.message}. Check console for details.`,
           variant: 'destructive',
         });
       }
     } else {
       toast({
-        title: 'Error',
-        description: 'An unknown error occurred',
+        title: 'Unexpected Error',
+        description: 'An unknown error occurred during the API request.',
         variant: 'destructive',
       });
     }

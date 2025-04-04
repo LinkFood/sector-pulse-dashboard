@@ -5,6 +5,7 @@ import DashboardLayout from "@/layouts/dashboard-layout";
 import MarketIndicesCard from "@/components/market/market-indices-card";
 import SectorHeatmap from "@/components/market/sector-heatmap";
 import WatchlistCard from "@/components/watchlist/watchlist-card";
+import DebugInfo from "@/components/DebugInfo";
 import { 
   fetchMarketIndices, 
   fetchSectorPerformance, 
@@ -82,6 +83,9 @@ const Index = () => {
   return (
     <DashboardLayout>
       <div className="grid gap-6">
+        {/* Add debug information at the top */}
+        <DebugInfo />
+        
         {isLoading ? (
           <>
             <Skeleton className="h-40 w-full" />

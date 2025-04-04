@@ -12,7 +12,7 @@ import {
   getApiKey
 } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const [indices, setIndices] = useState([]);

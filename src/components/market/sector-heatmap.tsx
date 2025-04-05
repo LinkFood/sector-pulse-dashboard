@@ -4,6 +4,7 @@ import { SectorPerformance } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import PercentageChange from "@/components/ui/percentage-change";
 import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SectorHeatmapProps {
   sectors: SectorPerformance[];
@@ -15,6 +16,7 @@ type Timeframe = typeof timeframes[number];
 
 export function SectorHeatmap({ sectors, className }: SectorHeatmapProps) {
   const [timeframe, setTimeframe] = useState<Timeframe>("1D");
+  const isMobile = useIsMobile();
 
   // Calculate color intensity based on performance
   const getBackgroundStyle = (performance: number) => {
@@ -35,19 +37,20 @@ export function SectorHeatmap({ sectors, className }: SectorHeatmapProps) {
   
   return (
     <Card className={className}>
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-2 sm:pb-3">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
           <div>
-            <CardTitle className="text-lg font-semibold">Sector Rotation Heatmap</CardTitle>
+            <CardTitle className="text-base sm:text-lg font-semibold">Sector Rotation Heatmap</CardTitle>
             <CardDescription>Performance by market sector</CardDescription>
           </div>
-          <div className="flex space-x-1">
+          <div className="flex flex-wrap gap-1">
             {timeframes.map((tf) => (
               <button
                 key={tf}
                 onClick={() => setTimeframe(tf)}
                 className={cn(
                   "px-2 py-1 text-xs font-medium rounded",
+                  "touch-action-manipulation", // Improve touch response
                   timeframe === tf 
                     ? "bg-primary text-primary-foreground" 
                     : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
@@ -60,21 +63,21 @@ export function SectorHeatmap({ sectors, className }: SectorHeatmapProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
           {sectors.map((sector) => (
             <div 
               key={sector.sector}
-              className="flex flex-col p-3 rounded-md border"
+              className="flex flex-col p-2 sm:p-3 rounded-md border"
               style={getBackgroundStyle(sector.performance)}
             >
               <span className={cn(
-                "font-medium",
+                "font-medium text-sm sm:text-base truncate",
                 Math.abs(sector.performance) > 1.5 ? "text-white" : ""
               )}>
                 {sector.sector}
               </span>
               <span className={cn(
-                "text-lg font-semibold",
+                "text-base sm:text-lg font-semibold",
                 Math.abs(sector.performance) > 1.5 ? "text-white" : ""
               )}>
                 <PercentageChange 

@@ -9,14 +9,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { BarChart3, Settings, Wrench } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function AppSidebar() {
+  const isMobile = useIsMobile();
+
   return (
     <Sidebar>
       <SidebarHeader className="flex items-center px-2">
-        <div className="flex items-center space-x-2 px-2">
-          <BarChart3 className="h-6 w-6" />
-          <span className="font-bold">SectorPulse</span>
+        <div className="flex items-center space-x-2 px-2 py-1">
+          <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6" />
+          <span className="font-bold text-sm sm:text-base">SectorPulse</span>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -26,13 +29,15 @@ export function AppSidebar() {
         <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
           <Link to="/api-config">
             <Wrench className="mr-2 h-4 w-4" />
-            API Configuration
+            {!isMobile && "API Configuration"}
+            {isMobile && <span className="sr-only">API Configuration</span>}
           </Link>
         </Button>
         <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
           <Link to="/settings">
             <Settings className="mr-2 h-4 w-4" />
-            Settings
+            {!isMobile && "Settings"}
+            {isMobile && <span className="sr-only">Settings</span>}
           </Link>
         </Button>
       </SidebarFooter>

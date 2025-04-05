@@ -16,8 +16,12 @@ import Stock from "@/pages/stock";
 import Sectors from "@/pages/sectors";
 import Screener from "@/pages/screener";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import MobileNav from "@/components/layout/mobile-nav";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 function App() {
+  const isMobile = useIsMobile();
+  
   return (
     <ThemeProvider>
       <Routes>
@@ -44,6 +48,12 @@ function App() {
         <Route path="/api-config" element={<ApiConfig />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      
+      {/* Add Mobile Navigation */}
+      {isMobile && <MobileNav />}
+      
+      {/* Add bottom padding on mobile to account for the navigation bar */}
+      {isMobile && <div className="h-16" />}
     </ThemeProvider>
   );
 }

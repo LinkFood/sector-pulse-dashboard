@@ -14,6 +14,7 @@ import {
   Activity,
   Shield,
 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
   items?: {
@@ -29,6 +30,7 @@ export function SidebarNav({
   ...props
 }: SidebarNavProps) {
   const location = useLocation();
+  const isMobile = useIsMobile();
   
   const defaultItems = [
     {
@@ -81,13 +83,21 @@ export function SidebarNav({
   const navItems = items || defaultItems;
 
   return (
-    <nav className={cn("flex flex-col space-y-1", className)} {...props}>
+    <nav 
+      className={cn(
+        "flex flex-col space-y-1",
+        isMobile && "py-2",
+        className
+      )} 
+      {...props}
+    >
       {navItems.map((item) => (
         <Button
           key={item.href}
           variant="ghost"
           className={cn(
             "justify-start",
+            isMobile && "py-3",
             location.pathname === item.href
               ? "bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90 hover:text-sidebar-accent-foreground"
               : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"

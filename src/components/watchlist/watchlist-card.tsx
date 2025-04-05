@@ -128,7 +128,7 @@ export function WatchlistCard({ watchlistId, className, isCompact = false }: Wat
               )}
             </div>
             
-            <CollapsibleContent forceMount className="w-full sm:w-auto">
+            <CollapsibleContent className="w-full sm:w-auto">
               <div className="flex w-full sm:w-auto space-x-2 mt-2 sm:mt-0">
                 <div className="relative flex-1 sm:flex-initial">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -161,140 +161,146 @@ export function WatchlistCard({ watchlistId, className, isCompact = false }: Wat
           </div>
         </Collapsible>
       </CardHeader>
-      
-      <CollapsibleContent forceMount>
-        <CardContent className={currentGroup.expanded === false ? 'hidden' : ''}>
-          {isLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              {!isCompact && (
-                <>
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-10 w-full" />
-                </>
-              )}
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="cursor-pointer w-[80px]" onClick={() => handleSort('symbol')}>
-                      <div className="flex items-center">
-                        Symbol
-                        {currentGroup.sortBy === 'symbol' && (
-                          currentGroup.sortDirection === 'asc' ? 
-                            <ArrowUpAZ className="ml-1 h-3 w-3" /> : 
-                            <ArrowDownAZ className="ml-1 h-3 w-3" />
-                        )}
-                      </div>
-                    </TableHead>
-                    <TableHead className="cursor-pointer" onClick={() => handleSort('name')}>
-                      <div className="flex items-center">
-                        Name
-                        {currentGroup.sortBy === 'name' && (
-                          currentGroup.sortDirection === 'asc' ? 
-                            <ArrowUpAZ className="ml-1 h-3 w-3" /> : 
-                            <ArrowDownAZ className="ml-1 h-3 w-3" />
-                        )}
-                      </div>
-                    </TableHead>
-                    <TableHead className="text-right cursor-pointer" onClick={() => handleSort('price')}>
-                      <div className="flex items-center justify-end">
-                        Price
-                        {currentGroup.sortBy === 'price' && (
-                          currentGroup.sortDirection === 'asc' ? 
-                            <ArrowUpAZ className="ml-1 h-3 w-3" /> : 
-                            <ArrowDownAZ className="ml-1 h-3 w-3" />
-                        )}
-                      </div>
-                    </TableHead>
-                    <TableHead className="text-right cursor-pointer" onClick={() => handleSort('changePercent')}>
-                      <div className="flex items-center justify-end">
-                        Change
-                        {currentGroup.sortBy === 'changePercent' && (
-                          currentGroup.sortDirection === 'asc' ? 
-                            <ArrowUpAZ className="ml-1 h-3 w-3" /> : 
-                            <ArrowDownAZ className="ml-1 h-3 w-3" />
-                        )}
-                      </div>
-                    </TableHead>
-                    {!isCompact && (
-                      <TableHead className="w-[70px]"></TableHead>
-                    )}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredWatchlist.length > 0 ? (
-                    filteredWatchlist.map((item) => (
-                      <ContextMenuTrigger key={item.symbol} asChild>
-                        <TableRow>
-                          <TableCell className="font-medium">
-                            <Link to={`/stock/${item.symbol}`} className="hover:underline">
-                              {item.symbol}
-                            </Link>
-                          </TableCell>
-                          <TableCell className="max-w-[200px] truncate">
-                            {item.name}
-                          </TableCell>
-                          <TableCell className="text-right">${item.price.toFixed(2)}</TableCell>
-                          <TableCell className="text-right">
-                            <PercentageChange value={item.changePercent} />
-                          </TableCell>
-                          {!isCompact && (
-                            <TableCell className="text-right p-0 pr-2">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem asChild>
-                                    <Link to={`/stock/${item.symbol}`}>View Details</Link>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem 
-                                    className="text-destructive"
-                                    onClick={() => handleRemoveSymbol(item.symbol)}>
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Remove
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          )}
 
-                          <ContextMenuContent>
-                            <ContextMenuItem asChild>
-                              <Link to={`/stock/${item.symbol}`}>View Details</Link>
-                            </ContextMenuItem>
-                            <ContextMenuSeparator />
-                            <ContextMenuItem 
-                              className="text-destructive"
-                              onClick={() => handleRemoveSymbol(item.symbol)}>
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Remove
-                            </ContextMenuItem>
-                          </ContextMenuContent>
-                        </TableRow>
-                      </ContextMenuTrigger>
-                    ))
-                  ) : (
+      {/* We need to wrap this CardContent in the same Collapsible as above */}
+      <Collapsible 
+        open={currentGroup.expanded !== false} 
+        onOpenChange={toggleExpanded}
+      >
+        <CollapsibleContent>
+          <CardContent>
+            {isLoading ? (
+              <div className="space-y-2">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                {!isCompact && (
+                  <>
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={isCompact ? 4 : 5} className="h-24 text-center">
-                        {searchTerm ? "No stocks found." : "Your watchlist is empty."}
-                      </TableCell>
+                      <TableHead className="cursor-pointer w-[80px]" onClick={() => handleSort('symbol')}>
+                        <div className="flex items-center">
+                          Symbol
+                          {currentGroup.sortBy === 'symbol' && (
+                            currentGroup.sortDirection === 'asc' ? 
+                              <ArrowUpAZ className="ml-1 h-3 w-3" /> : 
+                              <ArrowDownAZ className="ml-1 h-3 w-3" />
+                          )}
+                        </div>
+                      </TableHead>
+                      <TableHead className="cursor-pointer" onClick={() => handleSort('name')}>
+                        <div className="flex items-center">
+                          Name
+                          {currentGroup.sortBy === 'name' && (
+                            currentGroup.sortDirection === 'asc' ? 
+                              <ArrowUpAZ className="ml-1 h-3 w-3" /> : 
+                              <ArrowDownAZ className="ml-1 h-3 w-3" />
+                          )}
+                        </div>
+                      </TableHead>
+                      <TableHead className="text-right cursor-pointer" onClick={() => handleSort('price')}>
+                        <div className="flex items-center justify-end">
+                          Price
+                          {currentGroup.sortBy === 'price' && (
+                            currentGroup.sortDirection === 'asc' ? 
+                              <ArrowUpAZ className="ml-1 h-3 w-3" /> : 
+                              <ArrowDownAZ className="ml-1 h-3 w-3" />
+                          )}
+                        </div>
+                      </TableHead>
+                      <TableHead className="text-right cursor-pointer" onClick={() => handleSort('changePercent')}>
+                        <div className="flex items-center justify-end">
+                          Change
+                          {currentGroup.sortBy === 'changePercent' && (
+                            currentGroup.sortDirection === 'asc' ? 
+                              <ArrowUpAZ className="ml-1 h-3 w-3" /> : 
+                              <ArrowDownAZ className="ml-1 h-3 w-3" />
+                          )}
+                        </div>
+                      </TableHead>
+                      {!isCompact && (
+                        <TableHead className="w-[70px]"></TableHead>
+                      )}
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </CollapsibleContent>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredWatchlist.length > 0 ? (
+                      filteredWatchlist.map((item) => (
+                        <ContextMenuTrigger key={item.symbol} asChild>
+                          <TableRow>
+                            <TableCell className="font-medium">
+                              <Link to={`/stock/${item.symbol}`} className="hover:underline">
+                                {item.symbol}
+                              </Link>
+                            </TableCell>
+                            <TableCell className="max-w-[200px] truncate">
+                              {item.name}
+                            </TableCell>
+                            <TableCell className="text-right">${item.price.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">
+                              <PercentageChange value={item.changePercent} />
+                            </TableCell>
+                            {!isCompact && (
+                              <TableCell className="text-right p-0 pr-2">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem asChild>
+                                      <Link to={`/stock/${item.symbol}`}>View Details</Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem 
+                                      className="text-destructive"
+                                      onClick={() => handleRemoveSymbol(item.symbol)}>
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      Remove
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </TableCell>
+                            )}
+
+                            <ContextMenuContent>
+                              <ContextMenuItem asChild>
+                                <Link to={`/stock/${item.symbol}`}>View Details</Link>
+                              </ContextMenuItem>
+                              <ContextMenuSeparator />
+                              <ContextMenuItem 
+                                className="text-destructive"
+                                onClick={() => handleRemoveSymbol(item.symbol)}>
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Remove
+                              </ContextMenuItem>
+                            </ContextMenuContent>
+                          </TableRow>
+                        </ContextMenuTrigger>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={isCompact ? 4 : 5} className="h-24 text-center">
+                          {searchTerm ? "No stocks found." : "Your watchlist is empty."}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 }

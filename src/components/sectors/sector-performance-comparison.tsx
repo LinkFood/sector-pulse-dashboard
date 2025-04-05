@@ -26,8 +26,17 @@ const SectorPerformanceComparison: React.FC<SectorPerformanceComparisonProps> = 
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" domain={['dataMin', 'dataMax']} tickFormatter={(value) => `${value.toFixed(2)}%`} />
-              <YAxis dataKey="sector" type="category" width={100} />
+              <XAxis 
+                type="number" 
+                domain={['dataMin', 'dataMax']} 
+                tickFormatter={(value) => `${value.toFixed(2)}%`} 
+              />
+              <YAxis 
+                dataKey="sector" 
+                type="category" 
+                width={100} 
+                tick={{ fontSize: 12 }}
+              />
               <Tooltip
                 formatter={(value) => [`${Number(value).toFixed(2)}%`, 'Performance']}
                 labelFormatter={(label) => label}

@@ -123,8 +123,8 @@ export const fetchSectorPerformance = async (): Promise<SectorPerformance[]> => 
       
       return {
         sector: sectorInfo?.sector || tickerData.ticker,
-        performance: tickerData.todaysChangePerc,
-        change: tickerData.todaysChange
+        performance: tickerData.todaysChangePerc || 0,
+        change: tickerData.todaysChange || 0
       };
     });
   } catch (error) {

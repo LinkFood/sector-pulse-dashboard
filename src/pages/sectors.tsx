@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import DashboardLayout from "@/layouts/dashboard-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,11 +21,35 @@ const SectorsPage = () => {
   
   const { data: sectorData, isLoading, error } = useApiData<{sectors: SectorPerformance[]}>(
     ['sectors', timeframe],
-    '/v1/reference/sectors',
-    { timeframe },
+    '/v2/snapshot/locale/us/markets/stocks/tickers',
+    { tickers: 'XLK,XLV,XLF,XLY,XLC,XLI,XLP,XLE,XLU,XLRE,XLB' },
     {
       select: (data) => {
-        if (data && data.sectors) return data;
+        if (data && data.tickers) {
+          const sectorMap: Record<string, string> = {
+            'XLK': 'Technology',
+            'XLV': 'Healthcare',
+            'XLF': 'Financials',
+            'XLY': 'Consumer Discretionary',
+            'XLC': 'Communication Services',
+            'XLI': 'Industrials',
+            'XLP': 'Consumer Staples',
+            'XLE': 'Energy',
+            'XLU': 'Utilities',
+            'XLRE': 'Real Estate',
+            'XLB': 'Materials'
+          };
+          
+          return {
+            sectors: data.tickers.map(ticker => ({
+              sector: sectorMap[ticker.ticker] || ticker.ticker,
+              performance: ticker.todaysChangePerc || 0,
+              change: ticker.todaysChange || 0
+            }))
+          };
+        }
+        
+        // Return fallback data if API fails
         return {
           sectors: [
             { sector: "Technology", performance: 2.5, change: 8.75 },

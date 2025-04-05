@@ -26,6 +26,7 @@ export const DebugInfo: React.FC = () => {
       }
     };
 
+    // Only check connection if we're mounted
     checkConnection();
   }, []);
 

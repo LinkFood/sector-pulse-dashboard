@@ -16,8 +16,6 @@ export function useApiData<T>(
     refetchInterval?: number | false;
     staleTime?: number;
     retry?: boolean | number;
-    onSuccess?: (data: T) => void;
-    onError?: (error: Error) => void;
     select?: (data: T) => any;
   } = {}
 ) {
@@ -39,8 +37,6 @@ export function useApiData<T>(
     retry: options.retry !== undefined ? options.retry : 1,
     enabled: options.enabled !== undefined ? options.enabled : true,
     refetchInterval: options.refetchInterval,
-    onSuccess: options.onSuccess,
-    onError: options.onError,
     select: options.select,
   });
 }

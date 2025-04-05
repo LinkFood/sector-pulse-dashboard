@@ -8,8 +8,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import IndicatorSelector from "@/components/technicals/indicator-selector";
+import { ProcessedBar } from "@/lib/technicals/types";
 
-// Import types from the correct location
+// Define AggregateBar type locally to avoid conflicts
 interface AggregateBar {
   v: number;  // Volume
   o: number;  // Open price
@@ -17,18 +18,6 @@ interface AggregateBar {
   h: number;  // High price
   l: number;  // Low price
   t: number;  // Timestamp
-}
-
-interface ProcessedBar extends AggregateBar {
-  sma20?: number;
-  ema9?: number;
-  upperBand?: number;
-  lowerBand?: number;
-  rsi?: number;
-  macd?: number;
-  signal?: number;
-  histogram?: number;
-  [key: string]: number | undefined;
 }
 
 interface TechnicalIndicatorsProps {

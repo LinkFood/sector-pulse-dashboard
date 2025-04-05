@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { checkApiKey } from './config';
 import { 
   getCacheKey, 
-  getLocalCache as getCachedData, 
+  getCachedData, 
   setLocalCache, 
   CACHE_TTL,
   updateApiUsageStats

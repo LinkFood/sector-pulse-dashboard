@@ -10,6 +10,7 @@ import TimeframeSelector from "@/components/breadth/timeframe-selector";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApiData } from "@/hooks/use-api-data";
 import { processBarsWithIndicators } from "@/lib/technicals/indicators";
+import { ProcessedBar } from "@/lib/technicals/types";
 
 // Define AggregateBar type
 interface AggregateBar {
@@ -21,6 +22,15 @@ interface AggregateBar {
   t: number;  // Timestamp
 }
 
+interface ApiResponse {
+  results?: AggregateBar[];
+  ticker?: string;
+  status?: string;
+  queryCount?: number;
+  resultsCount?: number;
+  adjusted?: boolean;
+}
+
 const TechnicalsPage = () => {
   const { symbol } = useParams();
   const navigate = useNavigate();
@@ -29,14 +39,14 @@ const TechnicalsPage = () => {
   const [stockSymbol, setStockSymbol] = useState(symbol || "AAPL");
 
   // Fetch stock data using our optimized hook
-  const { data: processedData, isLoading } = useApiData(
+  const { data, isLoading } = useApiData<ApiResponse>(
     ["technicalData", stockSymbol, selectedTimeframe],
     `/v2/aggs/ticker/${stockSymbol}/range/1/day/${selectedTimeframe}`,
     {},
     {
       enabled: !!stockSymbol,
-      select: (data) => {
-        if (!data?.results) return [];
+      select: (apiResponse: ApiResponse) => {
+        if (!apiResponse?.results || !Array.isArray(apiResponse.results)) return [];
         
         const indicators = {
           sma: activeIndicators.includes("sma"),
@@ -46,7 +56,7 @@ const TechnicalsPage = () => {
           macd: activeIndicators.includes("macd"),
         };
         
-        return processBarsWithIndicators(data.results, indicators);
+        return processBarsWithIndicators(apiResponse.results, indicators);
       }
     }
   );
@@ -66,6 +76,9 @@ const TechnicalsPage = () => {
         : [...prev, indicator]
     );
   };
+
+  // Ensure we have a properly typed data array
+  const processedData = Array.isArray(data) ? data : [];
 
   return (
     <DashboardLayout>
@@ -103,7 +116,7 @@ const TechnicalsPage = () => {
                 </TabsList>
                 <TabsContent value="candlestick" className="mt-4">
                   <TechnicalChart 
-                    data={processedData || []} 
+                    data={processedData} 
                     isLoading={isLoading}
                     activeIndicators={activeIndicators}
                     chartType="candlestick"
@@ -111,7 +124,7 @@ const TechnicalsPage = () => {
                 </TabsContent>
                 <TabsContent value="line" className="mt-4">
                   <TechnicalChart 
-                    data={processedData || []} 
+                    data={processedData} 
                     isLoading={isLoading}
                     activeIndicators={activeIndicators}
                     chartType="line"
@@ -119,7 +132,7 @@ const TechnicalsPage = () => {
                 </TabsContent>
                 <TabsContent value="area" className="mt-4">
                   <TechnicalChart 
-                    data={processedData || []} 
+                    data={processedData} 
                     isLoading={isLoading}
                     activeIndicators={activeIndicators}
                     chartType="area"

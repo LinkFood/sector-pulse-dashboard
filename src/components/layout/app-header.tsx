@@ -11,6 +11,7 @@ import { Bell, LogIn } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Link } from "react-router-dom";
 import UserProfileButton from "@/components/auth/UserProfileButton";
+import ThemeToggle from "@/components/theme/theme-toggle";
 
 export function AppHeader() {
   const { user } = useAuth();
@@ -22,6 +23,8 @@ export function AppHeader() {
         <h1 className="text-xl font-semibold">Sector Pulse Dashboard</h1>
       </div>
       <div className="flex items-center gap-3">
+        <ThemeToggle />
+        
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>

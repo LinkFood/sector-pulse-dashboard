@@ -11,6 +11,7 @@ import Signup from './pages/auth/Signup';
 import ProfilePage from './pages/Profile';
 import BreadthPage from './pages/breadth';
 import VolumePage from './pages/volume';
+import SectorsPage from './pages/sectors';
 import { AuthProvider } from './context/AuthContext';
 import { Toaster } from './components/ui/sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -34,6 +35,7 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/breadth" element={<BreadthPage />} />
             <Route path="/volume" element={<VolumePage />} />
+            <Route path="/sectors" element={<SectorsPage />} />
           </Routes>
         </Router>
         <Toaster />

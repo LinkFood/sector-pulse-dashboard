@@ -56,7 +56,19 @@ export function WatchlistCard({ watchlistId, className, isCompact = false }: Wat
   
   // Find the current watchlist group
   const currentGroup = watchlistGroups.find(group => group.id === watchlistId);
-  if (!currentGroup) return null;
+  if (!currentGroup) {
+    console.warn(`Watchlist group with ID "${watchlistId}" not found`);
+    return (
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle>Watchlist Not Found</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">The requested watchlist could not be found.</p>
+        </CardContent>
+      </Card>
+    );
+  }
   
   const watchlist = watchlistData[watchlistId] || [];
   

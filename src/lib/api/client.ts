@@ -1,10 +1,10 @@
 
-import axios, { AxiosRequestConfig } from 'axios';
+import axios from 'axios';
 import { toast } from 'sonner';
 import { checkApiKey } from './config';
 import { 
   getCacheKey, 
-  getLocalCache, 
+  getLocalCache as getCachedData, 
   setLocalCache, 
   CACHE_TTL,
   updateApiUsageStats
@@ -58,7 +58,7 @@ export const makeRequest = async <T>(
   
   // Check cache first if not forcing refresh
   if (!options.forceRefresh) {
-    const cachedData = getLocalCache<T>(cacheKey);
+    const cachedData = getCachedData<T>(cacheKey);
     if (cachedData) {
       console.log('Using cached data for:', url);
       return cachedData.data;
@@ -120,7 +120,7 @@ export const makeRequest = async <T>(
         }
         
         // Try to return cached data as fallback even if it's expired
-        const cachedData = getLocalCache<T>(cacheKey, true);
+        const cachedData = getCachedData<T>(cacheKey, true);
         if (cachedData) {
           toast.info('Using stale cached data as fallback');
           return cachedData.data;
@@ -131,38 +131,6 @@ export const makeRequest = async <T>(
       throw error;
     }
   }, options.priority || REQUEST_PRIORITY.MEDIUM);
-};
-
-// Helper function to access potentially expired cache
-export const getLocalCache = <T>(key: string, allowExpired: boolean = false): {
-  data: T;
-  timestamp: number;
-  ttl: number;
-} | null => {
-  try {
-    const cacheKey = `polygon_api_cache_${key}`;
-    const cached = localStorage.getItem(cacheKey);
-    
-    if (!cached) return null;
-    
-    const entry = JSON.parse(cached) as {
-      data: T;
-      timestamp: number;
-      ttl: number;
-    };
-    
-    if (!allowExpired) {
-      const now = Date.now();
-      if (now - entry.timestamp > entry.ttl) {
-        return null;
-      }
-    }
-    
-    return entry;
-  } catch (error) {
-    console.error('Cache retrieval error:', error);
-    return null;
-  }
 };
 
 // Batch multiple requests into a single request where possible

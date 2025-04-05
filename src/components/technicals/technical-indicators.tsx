@@ -2,14 +2,34 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useApiData } from "@/hooks/use-api-data";
-import { fetchAggregateData } from "@/lib/api/volume";
 import { processBarsWithIndicators } from "@/lib/technicals/indicators";
 import { optimizeDataSet, getOptimizationLevel } from "@/lib/technicals/optimizer";
-import { AggregateBar, ProcessedBar } from "@/lib/technicals/types";
-import IndicatorSelector from "@/components/technicals/indicator-selector";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import IndicatorSelector from "@/components/technicals/indicator-selector";
+
+// Import types from the correct location
+interface AggregateBar {
+  v: number;  // Volume
+  o: number;  // Open price
+  c: number;  // Close price
+  h: number;  // High price
+  l: number;  // Low price
+  t: number;  // Timestamp
+}
+
+interface ProcessedBar extends AggregateBar {
+  sma20?: number;
+  ema9?: number;
+  upperBand?: number;
+  lowerBand?: number;
+  rsi?: number;
+  macd?: number;
+  signal?: number;
+  histogram?: number;
+  [key: string]: number | undefined;
+}
 
 interface TechnicalIndicatorsProps {
   symbol: string;

@@ -1,95 +1,101 @@
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
-import { Database, RefreshCw, Trash2 } from "lucide-react";
-import { useApiUsage } from "@/hooks/use-api-data";
-import { clearCache } from "@/lib/api/cache";
+import React from 'react';
+import { useApiUsage } from '@/hooks/use-api-data';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Gauge, RefreshCw, Ban } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export function ApiUsageMonitor() {
+const ApiUsageMonitor: React.FC = () => {
   const { usageStats, resetUsageStats } = useApiUsage();
-  const [isOpen, setIsOpen] = useState(false);
-  
-  // Calculate usage percentage (based on 100 requests per day on starter plan)
-  const usagePercentage = Math.min(100, (usageStats.dailyRequests / 100) * 100);
-  const isHighUsage = usagePercentage > 80;
-  
-  const handleClearCache = () => {
-    clearCache();
-  };
-  
-  if (!isOpen) {
-    return (
-      <Button 
-        variant="outline" 
-        size="sm" 
-        className="fixed bottom-4 right-4 z-50"
-        onClick={() => setIsOpen(true)}
-      >
-        <Database className="w-4 h-4 mr-2" />
-        API: {usageStats.dailyRequests}/100
-      </Button>
-    );
-  }
-  
+
+  const dailyUsagePercentage = Math.min(Math.round((usageStats.dailyRequests / 100) * 100), 100);
+
+  // Sort endpoints by usage count (descending)
+  const sortedEndpoints = Object.entries(usageStats.requestsByEndpoint || {})
+    .sort(([, countA], [, countB]) => (countB as number) - (countA as number))
+    .slice(0, 5); // Only show top 5
+
+  // Determine usage level for styling
+  const usageLevel = 
+    dailyUsagePercentage < 50 ? 'low' : 
+    dailyUsagePercentage < 80 ? 'medium' : 'high';
+
+  const usageLevelColorClass = {
+    low: 'text-green-500',
+    medium: 'text-amber-500',
+    high: 'text-red-500',
+  }[usageLevel];
+
   return (
-    <Card className="fixed bottom-4 right-4 z-50 w-80 shadow-lg">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-md">Polygon.io API Usage</CardTitle>
-          <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
-            ×
+    <Card className="shadow-md">
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="text-lg font-medium flex items-center gap-2">
+              <Gauge className="h-4 w-4" />
+              API Usage Monitor
+            </CardTitle>
+            <CardDescription>
+              {usageStats.lastResetDate ? 
+                `Statistics since ${new Date(usageStats.lastResetDate).toLocaleDateString()}` : 
+                'Tracking API usage statistics'}
+            </CardDescription>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={resetUsageStats} 
+            title="Reset usage statistics"
+          >
+            <RefreshCw className="h-4 w-4 mr-1" />
+            Reset
           </Button>
         </div>
       </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Daily API Requests</span>
-            <span className="text-sm font-semibold">
-              {usageStats.dailyRequests}/100
-            </span>
-          </div>
-          
-          <Progress 
-            value={usagePercentage} 
-            className={isHighUsage ? "bg-red-200" : ""}
-            indicatorClassName={isHighUsage ? "bg-red-500" : ""}
-          />
-          
-          <div className="text-xs text-muted-foreground">
-            Reset: {usageStats.lastResetDate || 'Today'}
-          </div>
-        </div>
-        
-        <Separator />
-        
-        <div className="space-y-1 max-h-40 overflow-y-auto">
-          <div className="text-sm font-medium mb-1">Requests by Endpoint</div>
-          {Object.entries(usageStats.requestsByEndpoint || {}).map(([endpoint, count]) => (
-            <div key={endpoint} className="flex justify-between text-xs">
-              <span className="truncate w-52">{endpoint}</span>
-              <span>{count}</span>
+      <CardContent>
+        <div className="space-y-4">
+          <div>
+            <div className="flex justify-between text-sm mb-1">
+              <span>Daily API Usage</span>
+              <span className={cn("font-medium", usageLevelColorClass)}>
+                {usageStats.dailyRequests}/100 requests
+              </span>
             </div>
-          ))}
-        </div>
-        
-        <div className="flex space-x-2 pt-2">
-          <Button variant="outline" size="sm" className="flex-1" onClick={resetUsageStats}>
-            <RefreshCw className="w-3 h-3 mr-1" />
-            Reset Stats
-          </Button>
-          <Button variant="outline" size="sm" className="flex-1" onClick={handleClearCache}>
-            <Trash2 className="w-3 h-3 mr-1" />
-            Clear Cache
-          </Button>
+            <Progress 
+              value={dailyUsagePercentage} 
+              className={cn(
+                "h-2", 
+                dailyUsagePercentage >= 80 ? "bg-red-100" : "bg-slate-100"
+              )}
+            />
+          </div>
+
+          {dailyUsagePercentage >= 80 && (
+            <div className="bg-red-50 text-red-600 p-2 rounded-md flex items-center text-sm">
+              <Ban className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span>Approaching daily limit. Consider implementing additional throttling.</span>
+            </div>
+          )}
+
+          {sortedEndpoints.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-sm font-medium mb-2">Most Used Endpoints</h4>
+              <ul className="space-y-1">
+                {sortedEndpoints.map(([endpoint, count]) => (
+                  <li key={endpoint} className="text-sm flex justify-between">
+                    <span className="truncate max-w-[70%] text-muted-foreground">{endpoint}</span>
+                    <span className="font-medium">{count} requests</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
   );
-}
+};
 
 export default ApiUsageMonitor;

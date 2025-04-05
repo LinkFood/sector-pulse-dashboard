@@ -8,9 +8,18 @@ import TechnicalChart from "@/components/technicals/technical-chart";
 import IndicatorSelector from "@/components/technicals/indicator-selector";
 import TimeframeSelector from "@/components/breadth/timeframe-selector";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useQuery } from "@tanstack/react-query";
-import { fetchAggregateData } from "@/lib/api/volume";
-import { calculateIndicators } from "@/lib/technicals/indicators";
+import { useApiData } from "@/hooks/use-api-data";
+import { processBarsWithIndicators } from "@/lib/technicals/indicators";
+
+// Define AggregateBar type
+interface AggregateBar {
+  v: number;  // Volume
+  o: number;  // Open price
+  c: number;  // Close price
+  h: number;  // High price
+  l: number;  // Low price
+  t: number;  // Timestamp
+}
 
 const TechnicalsPage = () => {
   const { symbol } = useParams();
@@ -19,17 +28,28 @@ const TechnicalsPage = () => {
   const [activeIndicators, setActiveIndicators] = useState<string[]>(["sma"]);
   const [stockSymbol, setStockSymbol] = useState(symbol || "AAPL");
 
-  // Fetch stock data
-  const { data: stockData, isLoading } = useQuery({
-    queryKey: ["technicalData", stockSymbol, selectedTimeframe],
-    queryFn: () => fetchAggregateData(stockSymbol, selectedTimeframe),
-    enabled: !!stockSymbol,
-  });
-
-  // Process indicators
-  const processedData = stockData?.results 
-    ? calculateIndicators(stockData.results, activeIndicators) 
-    : [];
+  // Fetch stock data using our optimized hook
+  const { data: processedData, isLoading } = useApiData(
+    ["technicalData", stockSymbol, selectedTimeframe],
+    `/v2/aggs/ticker/${stockSymbol}/range/1/day/${selectedTimeframe}`,
+    {},
+    {
+      enabled: !!stockSymbol,
+      select: (data) => {
+        if (!data?.results) return [];
+        
+        const indicators = {
+          sma: activeIndicators.includes("sma"),
+          ema: activeIndicators.includes("ema"),
+          bollinger: activeIndicators.includes("bollinger"),
+          rsi: activeIndicators.includes("rsi"),
+          macd: activeIndicators.includes("macd"),
+        };
+        
+        return processBarsWithIndicators(data.results, indicators);
+      }
+    }
+  );
     
   // Handle symbol search
   const handleSymbolSearch = (symbol: string) => {
@@ -83,7 +103,7 @@ const TechnicalsPage = () => {
                 </TabsList>
                 <TabsContent value="candlestick" className="mt-4">
                   <TechnicalChart 
-                    data={processedData} 
+                    data={processedData || []} 
                     isLoading={isLoading}
                     activeIndicators={activeIndicators}
                     chartType="candlestick"
@@ -91,7 +111,7 @@ const TechnicalsPage = () => {
                 </TabsContent>
                 <TabsContent value="line" className="mt-4">
                   <TechnicalChart 
-                    data={processedData} 
+                    data={processedData || []} 
                     isLoading={isLoading}
                     activeIndicators={activeIndicators}
                     chartType="line"
@@ -99,7 +119,7 @@ const TechnicalsPage = () => {
                 </TabsContent>
                 <TabsContent value="area" className="mt-4">
                   <TechnicalChart 
-                    data={processedData} 
+                    data={processedData || []} 
                     isLoading={isLoading}
                     activeIndicators={activeIndicators}
                     chartType="area"

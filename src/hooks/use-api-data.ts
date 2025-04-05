@@ -16,8 +16,6 @@ export function useApiData<T>(
     refetchInterval?: number | false;
     staleTime?: number;
     retry?: boolean | number;
-    suspense?: boolean;
-    priority?: number;
     onSuccess?: (data: T) => void;
     onError?: (error: Error) => void;
     select?: (data: T) => any;
@@ -34,14 +32,13 @@ export function useApiData<T>(
     queryFn: async () => {
       return makeRequest<T>(url, params, {
         cacheTTL,
-        priority: options.priority || REQUEST_PRIORITY.MEDIUM
+        priority: REQUEST_PRIORITY.MEDIUM
       });
     },
     staleTime,
     retry: options.retry !== undefined ? options.retry : 1,
     enabled: options.enabled !== undefined ? options.enabled : true,
     refetchInterval: options.refetchInterval,
-    suspense: options.suspense || false,
     onSuccess: options.onSuccess,
     onError: options.onError,
     select: options.select,
@@ -72,8 +69,6 @@ export function useBatchedQuery<T>(
     cacheTTL?: number;
     refetchInterval?: number | false;
     retry?: boolean | number;
-    onSuccess?: (data: T[]) => void;
-    onError?: (error: Error) => void;
   } = {}
 ) {
   const cacheTTL = options.cacheTTL || CACHE_TTL.MARKET_INDICES;
@@ -90,8 +85,6 @@ export function useBatchedQuery<T>(
     retry: options.retry !== undefined ? options.retry : 1,
     enabled: options.enabled !== undefined ? options.enabled : true,
     refetchInterval: options.refetchInterval,
-    onSuccess: options.onSuccess,
-    onError: options.onError,
   });
 }
 

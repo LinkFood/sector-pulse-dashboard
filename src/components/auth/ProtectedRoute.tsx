@@ -17,8 +17,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   useEffect(() => {
     if (!isLoading) {
       if (!user) {
-        // Redirect to login with returnUrl
-        navigate(`/auth/login?returnUrl=${encodeURIComponent(location.pathname)}`, { replace: true });
+        // Redirect to login with returnUrl, using the correct path
+        navigate(`/login?returnUrl=${encodeURIComponent(location.pathname)}`, { replace: true });
       } else {
         setIsInitializing(false);
       }

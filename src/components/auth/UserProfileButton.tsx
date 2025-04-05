@@ -32,7 +32,7 @@ export function UserProfileButton() {
     setIsLoading(true);
     await signOut();
     setIsLoading(false);
-    navigate('/auth/login');
+    navigate('/login');
   };
 
   return (

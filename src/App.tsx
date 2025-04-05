@@ -1,5 +1,5 @@
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { createOptimizedQueryClient } from './lib/api/cache';
@@ -32,38 +32,36 @@ function App() {
         <AuthProvider>
           <WatchlistProvider>
             <DataSourceProvider>
-              <Router>
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/stock/:symbol" element={<StockPage />} />
-                  <Route path="/sectors" element={<SectorsPage />} />
-                  <Route path="/breadth" element={<BreadthPage />} />
-                  <Route path="/filters" element={<FilterPage />} />
-                  <Route path="/screener" element={<ScreenerPage />} />
-                  <Route path="/technicals" element={<TechnicalsPage />} />
-                  <Route path="/volume" element={<VolumePage />} />
-                  <Route 
-                    path="/watchlist" 
-                    element={
-                      <ProtectedRoute>
-                        <WatchlistPage />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/profile" 
-                    element={
-                      <ProtectedRoute>
-                        <ProfilePage />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route path="/api-config" element={<ApiConfigPage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/signup" element={<SignupPage />} />
-                  <Route path="*" element={<NotFoundPage />} />
-                </Routes>
-              </Router>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/stock/:symbol" element={<StockPage />} />
+                <Route path="/sectors" element={<SectorsPage />} />
+                <Route path="/breadth" element={<BreadthPage />} />
+                <Route path="/filters" element={<FilterPage />} />
+                <Route path="/screener" element={<ScreenerPage />} />
+                <Route path="/technicals" element={<TechnicalsPage />} />
+                <Route path="/volume" element={<VolumePage />} />
+                <Route 
+                  path="/watchlist" 
+                  element={
+                    <ProtectedRoute>
+                      <WatchlistPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/profile" 
+                  element={
+                    <ProtectedRoute>
+                      <ProfilePage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route path="/api-config" element={<ApiConfigPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/signup" element={<SignupPage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
               <Toaster />
             </DataSourceProvider>
           </WatchlistProvider>

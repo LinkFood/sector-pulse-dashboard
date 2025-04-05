@@ -52,7 +52,7 @@ export function AppHeader() {
           <UserProfileButton />
         ) : (
           <Button asChild variant="default" size={isMobile ? "icon" : "sm"}>
-            <Link to="/auth/login">
+            <Link to="/login">
               {isMobile ? (
                 <LogIn className="h-4 w-4" />
               ) : (

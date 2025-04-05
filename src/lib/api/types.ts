@@ -126,3 +126,30 @@ export interface PolygonSnapshotResponse {
     updated: number;
   }>
 }
+
+export interface ScreeningCriteria {
+  minPrice?: number;
+  maxPrice?: number;
+  minVolume?: number;
+  maxVolume?: number;
+  marketCap?: string;
+  sector?: string;
+  above50dma?: boolean;
+  below50dma?: boolean;
+  above200dma?: boolean;
+  below200dma?: boolean;
+  minRsi?: number;
+  maxRsi?: number;
+}
+
+export interface ScreenerStock {
+  ticker: string;
+  name: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  volume: number;
+  marketCap?: number;
+  sector?: string;
+  industry?: string;
+}

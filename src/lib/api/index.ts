@@ -6,6 +6,7 @@ export * from './market';
 export * from './watchlist';
 export * from './volume';
 export * from './breadth';
+export * from './screener';
 
 // Create a default export with all commonly used functions
 import { getApiKey, setApiKey } from './config';
@@ -13,6 +14,7 @@ import { fetchMarketStatus, fetchMarketIndices, fetchSectorPerformance } from '.
 import { fetchWatchlistData } from './watchlist';
 import { fetchAggregateData, generateVolumeProfile, findSignificantLevels } from './volume';
 import { fetchMarketBreadthData, fetchBreadthOscillatorData } from './breadth';
+import { fetchScreenerResults, getSectors } from './screener';
 
 export default {
   getApiKey,
@@ -26,4 +28,6 @@ export default {
   findSignificantLevels,
   fetchMarketBreadthData,
   fetchBreadthOscillatorData,
+  fetchScreenerResults,
+  getSectors,
 };

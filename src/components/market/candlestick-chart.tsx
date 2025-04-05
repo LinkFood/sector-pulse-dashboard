@@ -125,8 +125,9 @@ const CandlestickChart: React.FC<CandlestickChartProps> = ({ data, significantLe
                   name="middle"
                   data={[item]} 
                   line={{ stroke: color, strokeWidth: 6 }} 
-                  lineType="vertical"
-                  shape="none"
+                  // Removed the invalid lineType="vertical" property
+                  // Replaced "none" with a valid empty shape function
+                  shape={() => null}
                   legendType="none"
                 />
               </React.Fragment>

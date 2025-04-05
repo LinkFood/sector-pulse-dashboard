@@ -5,7 +5,7 @@ import Index from './pages/Index';
 import WatchlistPage from './pages/watchlist';
 import ApiConfig from './pages/api-config';
 import StockDetailsPage from './pages/stock';
-import TechnicalAnalysisPage from './pages/technicals';
+import TechnicalsPage from './pages/technicals';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import ProfilePage from './pages/Profile';
@@ -29,7 +29,8 @@ function App() {
             <Route path="/watchlist" element={<WatchlistPage />} />
             <Route path="/api-config" element={<ApiConfig />} />
             <Route path="/stock/:symbol" element={<StockDetailsPage />} />
-            <Route path="/technicals/:symbol" element={<TechnicalAnalysisPage />} />
+            <Route path="/technicals" element={<TechnicalsPage />} />
+            <Route path="/technicals/:symbol" element={<TechnicalsPage />} />
             <Route path="/auth/login" element={<Login />} />
             <Route path="/auth/signup" element={<Signup />} />
             <Route path="/profile" element={<ProfilePage />} />

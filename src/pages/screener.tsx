@@ -39,10 +39,12 @@ const ScreenerPage = () => {
     enabled: hasApiKey,
     retry: 1,
     refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes,
-    onError: (err: any) => {
-      console.error('Error fetching screener results:', err);
-      toast.error('Failed to fetch stocks. Please check your filters and try again.');
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    meta: {
+      onError: (err: any) => {
+        console.error('Error fetching screener results:', err);
+        toast.error('Failed to fetch stocks. Please check your filters and try again.');
+      }
     }
   });
 
@@ -74,6 +76,11 @@ const ScreenerPage = () => {
   const handleLoadTemplate = (filters: ScreenerParams) => {
     setCurrentFilters(filters);
   };
+
+  // If there's an error, show it in the UI
+  if (error) {
+    console.error('Error in screener page:', error);
+  }
 
   return (
     <DashboardLayout>

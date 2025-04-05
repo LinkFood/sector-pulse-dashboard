@@ -14,10 +14,12 @@ import VolumePage from './pages/volume';
 import SectorsPage from './pages/sectors';
 import { AuthProvider } from './context/AuthContext';
 import { Toaster } from './components/ui/sonner';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createOptimizedQueryClient } from './lib/api/cache';
+import ApiUsageMonitor from './components/api/api-usage-monitor';
 
-// Create a client
-const queryClient = new QueryClient();
+// Create an optimized query client with caching and offline support
+const queryClient = createOptimizedQueryClient();
 
 function App() {
   return (
@@ -39,6 +41,7 @@ function App() {
             <Route path="/sectors" element={<SectorsPage />} />
           </Routes>
         </Router>
+        <ApiUsageMonitor />
         <Toaster />
       </AuthProvider>
     </QueryClientProvider>

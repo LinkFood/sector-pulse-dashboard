@@ -1,7 +1,6 @@
 
 import { Routes, Route } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from 'next-themes';
 import { createOptimizedQueryClient } from './lib/api/cache';
 import { AuthProvider } from './context/AuthContext';
 import { WatchlistProvider } from './contexts/WatchlistContext';
@@ -27,47 +26,43 @@ function App() {
   const queryClient = createOptimizedQueryClient();
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <WatchlistProvider>
-            <DataSourceProvider>
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/stock/:symbol" element={<StockPage />} />
-                <Route path="/sectors" element={<SectorsPage />} />
-                <Route path="/breadth" element={<BreadthPage />} />
-                <Route path="/filters" element={<FilterPage />} />
-                <Route path="/screener" element={<ScreenerPage />} />
-                <Route path="/technicals" element={<TechnicalsPage />} />
-                <Route path="/volume" element={<VolumePage />} />
-                <Route 
-                  path="/watchlist" 
-                  element={
-                    <ProtectedRoute>
-                      <WatchlistPage />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/profile" 
-                  element={
-                    <ProtectedRoute>
-                      <ProfilePage />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route path="/api-config" element={<ApiConfigPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/signup" element={<SignupPage />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-              <Toaster />
-            </DataSourceProvider>
-          </WatchlistProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <WatchlistProvider>
+        <DataSourceProvider>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/stock/:symbol" element={<StockPage />} />
+            <Route path="/sectors" element={<SectorsPage />} />
+            <Route path="/breadth" element={<BreadthPage />} />
+            <Route path="/filters" element={<FilterPage />} />
+            <Route path="/screener" element={<ScreenerPage />} />
+            <Route path="/technicals" element={<TechnicalsPage />} />
+            <Route path="/volume" element={<VolumePage />} />
+            <Route 
+              path="/watchlist" 
+              element={
+                <ProtectedRoute>
+                  <WatchlistPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="/api-config" element={<ApiConfigPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+          <Toaster />
+        </DataSourceProvider>
+      </WatchlistProvider>
+    </QueryClientProvider>
   );
 }
 

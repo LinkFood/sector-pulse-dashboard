@@ -2,7 +2,7 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { InfoCircle } from 'lucide-react';
+import { Info } from 'lucide-react';
 import {
   Tooltip as UITooltip,
   TooltipContent,
@@ -48,7 +48,7 @@ export const MovingAverages: React.FC<MovingAveragesProps> = ({
         <TooltipProvider>
           <UITooltip>
             <TooltipTrigger asChild>
-              <InfoCircle className="h-5 w-5 text-muted-foreground" />
+              <Info className="h-5 w-5 text-muted-foreground" />
             </TooltipTrigger>
             <TooltipContent>
               <p>Shows the percentage of stocks trading above their 50-day and 200-day moving averages, key indicators of market health.</p>

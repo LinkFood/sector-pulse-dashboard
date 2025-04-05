@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { InfoCircle } from 'lucide-react';
+import { Info } from 'lucide-react';
 import {
   Tooltip as UITooltip,
   TooltipContent,
@@ -26,8 +26,8 @@ export const HighsLows: React.FC<HighsLowsProps> = ({
   const lowsPercent = Math.round((newLows / total) * 100);
 
   const data = [
-    { name: 'New 52-Week Highs', value: newHighs, percent: highsPercent },
-    { name: 'New 52-Week Lows', value: newLows, percent: lowsPercent }
+    { name: 'New 52-Week Highs', value: newHighs, percent: highsPercent, color: '#22C55E' },
+    { name: 'New 52-Week Lows', value: newLows, percent: lowsPercent, color: '#EF4444' }
   ];
 
   // Determine market conditions
@@ -55,7 +55,7 @@ export const HighsLows: React.FC<HighsLowsProps> = ({
         <TooltipProvider>
           <UITooltip>
             <TooltipTrigger asChild>
-              <InfoCircle className="h-5 w-5 text-muted-foreground" />
+              <Info className="h-5 w-5 text-muted-foreground" />
             </TooltipTrigger>
             <TooltipContent>
               <p>Shows the number of stocks making new 52-week highs versus new 52-week lows, a key indicator of market strength or weakness.</p>
@@ -82,10 +82,14 @@ export const HighsLows: React.FC<HighsLowsProps> = ({
               />
               <Bar 
                 dataKey="value" 
-                fill={(entry) => entry.name === 'New 52-Week Highs' ? '#22C55E' : '#EF4444'} 
+                fill="#8884d8" 
                 barSize={30}
                 label={{ position: 'right', formatter: (value) => `${value}` }}
-              />
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>

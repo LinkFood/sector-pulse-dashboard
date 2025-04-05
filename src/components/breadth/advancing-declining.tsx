@@ -2,7 +2,7 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { InfoCircle } from 'lucide-react';
+import { Info } from 'lucide-react';
 import {
   Tooltip as UITooltip,
   TooltipContent,
@@ -29,9 +29,9 @@ export const AdvancingDeclining: React.FC<AdvancingDecliningProps> = ({
   const unchangedPercent = Math.round((unchanged / total) * 100);
 
   const data = [
-    { name: 'Advancing', value: advancing, percent: advancingPercent },
-    { name: 'Declining', value: declining, percent: decliningPercent },
-    { name: 'Unchanged', value: unchanged, percent: unchangedPercent }
+    { name: 'Advancing', value: advancing, percent: advancingPercent, color: '#22C55E' },
+    { name: 'Declining', value: declining, percent: decliningPercent, color: '#EF4444' },
+    { name: 'Unchanged', value: unchanged, percent: unchangedPercent, color: '#9CA3AF' }
   ];
 
   return (
@@ -41,7 +41,7 @@ export const AdvancingDeclining: React.FC<AdvancingDecliningProps> = ({
         <TooltipProvider>
           <UITooltip>
             <TooltipTrigger asChild>
-              <InfoCircle className="h-5 w-5 text-muted-foreground" />
+              <Info className="h-5 w-5 text-muted-foreground" />
             </TooltipTrigger>
             <TooltipContent>
               <p>Shows the number of stocks that are gaining (advancing) versus losing (declining) in the current session.</p>
@@ -68,15 +68,14 @@ export const AdvancingDeclining: React.FC<AdvancingDecliningProps> = ({
               />
               <Bar 
                 dataKey="value" 
-                fill={(entry) => entry.name === 'Advancing' ? 
-                  '#22C55E' : 
-                  entry.name === 'Declining' ? 
-                  '#EF4444' : 
-                  '#9CA3AF'
-                } 
+                fill="#8884d8"
                 barSize={30}
                 label={{ position: 'right', formatter: (value) => `${value}` }}
-              />
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>

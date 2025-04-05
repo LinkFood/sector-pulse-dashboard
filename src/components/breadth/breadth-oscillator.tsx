@@ -11,7 +11,7 @@ import {
   ReferenceLine 
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { InfoCircle } from 'lucide-react';
+import { Info } from 'lucide-react';
 import {
   Tooltip as UITooltip,
   TooltipContent,
@@ -70,7 +70,7 @@ export const BreadthOscillator: React.FC<BreadthOscillatorProps> = ({
         <TooltipProvider>
           <UITooltip>
             <TooltipTrigger asChild>
-              <InfoCircle className="h-5 w-5 text-muted-foreground" />
+              <Info className="h-5 w-5 text-muted-foreground" />
             </TooltipTrigger>
             <TooltipContent>
               <p>Shows market momentum as an oscillator between -100 and +100. Values above 0 indicate bullish momentum, while values below 0 indicate bearish momentum.</p>

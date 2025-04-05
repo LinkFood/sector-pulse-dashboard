@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { checkApiKey } from './config';
 import { 
   getCacheKey, 
-  getCachedData, 
+  getLocalCache, 
   setLocalCache, 
   CACHE_TTL,
   updateApiUsageStats
@@ -58,7 +58,7 @@ export const makeRequest = async <T>(
   
   // Check cache first if not forcing refresh
   if (!options.forceRefresh) {
-    const cachedData = getCachedData<T>(cacheKey);
+    const cachedData = getLocalCache<T>(cacheKey);
     if (cachedData) {
       console.log('Using cached data for:', url);
       return cachedData.data;
@@ -120,7 +120,7 @@ export const makeRequest = async <T>(
         }
         
         // Try to return cached data as fallback even if it's expired
-        const cachedData = getCachedData<T>(cacheKey, true);
+        const cachedData = getLocalCache<T>(cacheKey, true);
         if (cachedData) {
           toast.info('Using stale cached data as fallback');
           return cachedData.data;

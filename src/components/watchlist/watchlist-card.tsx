@@ -246,58 +246,59 @@ export function WatchlistCard({ watchlistId, className, isCompact = false }: Wat
                   <TableBody>
                     {filteredWatchlist.length > 0 ? (
                       filteredWatchlist.map((item) => (
-                        <ContextMenuTrigger key={item.symbol} asChild>
-                          <TableRow>
-                            <TableCell className="font-medium">
-                              <Link to={`/stock/${item.symbol}`} className="hover:underline">
-                                {item.symbol}
-                              </Link>
-                            </TableCell>
-                            <TableCell className="max-w-[200px] truncate">
-                              {item.name}
-                            </TableCell>
-                            <TableCell className="text-right">${item.price.toFixed(2)}</TableCell>
-                            <TableCell className="text-right">
-                              <PercentageChange value={item.changePercent} />
-                            </TableCell>
-                            {!isCompact && (
-                              <TableCell className="text-right p-0 pr-2">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem asChild>
-                                      <Link to={`/stock/${item.symbol}`}>View Details</Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem 
-                                      className="text-destructive"
-                                      onClick={() => handleRemoveSymbol(item.symbol)}>
-                                      <Trash2 className="mr-2 h-4 w-4" />
-                                      Remove
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                        <ContextMenu key={item.symbol}>
+                          <ContextMenuTrigger asChild>
+                            <TableRow>
+                              <TableCell className="font-medium">
+                                <Link to={`/stock/${item.symbol}`} className="hover:underline">
+                                  {item.symbol}
+                                </Link>
                               </TableCell>
-                            )}
-
-                            <ContextMenuContent>
-                              <ContextMenuItem asChild>
-                                <Link to={`/stock/${item.symbol}`}>View Details</Link>
-                              </ContextMenuItem>
-                              <ContextMenuSeparator />
-                              <ContextMenuItem 
-                                className="text-destructive"
-                                onClick={() => handleRemoveSymbol(item.symbol)}>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Remove
-                              </ContextMenuItem>
-                            </ContextMenuContent>
-                          </TableRow>
-                        </ContextMenuTrigger>
+                              <TableCell className="max-w-[200px] truncate">
+                                {item.name}
+                              </TableCell>
+                              <TableCell className="text-right">${item.price.toFixed(2)}</TableCell>
+                              <TableCell className="text-right">
+                                <PercentageChange value={item.changePercent} />
+                              </TableCell>
+                              {!isCompact && (
+                                <TableCell className="text-right p-0 pr-2">
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem asChild>
+                                        <Link to={`/stock/${item.symbol}`}>View Details</Link>
+                                      </DropdownMenuItem>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem 
+                                        className="text-destructive"
+                                        onClick={() => handleRemoveSymbol(item.symbol)}>
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Remove
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </TableCell>
+                              )}
+                            </TableRow>
+                          </ContextMenuTrigger>
+                          <ContextMenuContent>
+                            <ContextMenuItem asChild>
+                              <Link to={`/stock/${item.symbol}`}>View Details</Link>
+                            </ContextMenuItem>
+                            <ContextMenuSeparator />
+                            <ContextMenuItem 
+                              className="text-destructive"
+                              onClick={() => handleRemoveSymbol(item.symbol)}>
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Remove
+                            </ContextMenuItem>
+                          </ContextMenuContent>
+                        </ContextMenu>
                       ))
                     ) : (
                       <TableRow>

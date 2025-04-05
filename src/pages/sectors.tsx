@@ -14,12 +14,14 @@ import { SectorCorrelationMatrix } from "@/components/sectors/sector-correlation
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { PolygonSnapshotResponse } from "@/lib/api/types";
 
 const SectorsPage = () => {
   const isMobile = useIsMobile();
   const [timeframe, setTimeframe] = useState<string>("1M");
   
-  const { data: sectorData, isLoading, error } = useApiData<{sectors: SectorPerformance[]}>(
+  // Update the useApiData hook to use PolygonSnapshotResponse as the expected API response type
+  const { data: sectorData, isLoading, error } = useApiData<PolygonSnapshotResponse>(
     ['sectors', timeframe],
     '/v2/snapshot/locale/us/markets/stocks/tickers',
     { tickers: 'XLK,XLV,XLF,XLY,XLC,XLI,XLP,XLE,XLU,XLRE,XLB' },

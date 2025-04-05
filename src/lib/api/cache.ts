@@ -1,4 +1,3 @@
-
 import { QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -138,13 +137,8 @@ export const getLocalCache = <T>(key: string): ApiCacheEntry<T> | null => {
     const entry: ApiCacheEntry<T> = JSON.parse(cached);
     const now = Date.now();
     
-    // Return null if cache is expired
-    if (now - entry.timestamp > entry.ttl) {
-      // Clean up expired cache
-      localStorage.removeItem(cacheKey);
-      return null;
-    }
-    
+    // Always return the cache entry, even if expired
+    // This allows fallback to stale data when needed
     return entry;
   } catch (error) {
     console.error('Cache retrieval error:', error);

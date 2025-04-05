@@ -120,7 +120,8 @@ export const makeRequest = async <T>(
         }
         
         // Try to return cached data as fallback even if it's expired
-        const cachedData = getLocalCache<T>(cacheKey, true);
+        // Fix: Remove the second parameter which is causing the TypeScript error
+        const cachedData = getLocalCache<T>(cacheKey);
         if (cachedData) {
           toast.info('Using stale cached data as fallback');
           return cachedData.data;

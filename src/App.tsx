@@ -9,6 +9,7 @@ import TechnicalAnalysisPage from './pages/technicals';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import ProfilePage from './pages/Profile';
+import BreadthPage from './pages/breadth';
 import { AuthProvider } from './context/AuthContext';
 import { Toaster } from './components/ui/sonner';
 
@@ -25,6 +26,7 @@ function App() {
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/signup" element={<Signup />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/breadth" element={<BreadthPage />} />
         </Routes>
       </Router>
       <Toaster />

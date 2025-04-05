@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { 
   Card, 
@@ -165,7 +166,7 @@ export function FilterSection({ onFilterChange, isLoading }: FilterSectionProps)
                 <SelectValue placeholder="Select Market Cap" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Any</SelectItem>
+                <SelectItem value="any">Any</SelectItem>
                 <SelectItem value="small">Small Cap (&lt; $2B)</SelectItem>
                 <SelectItem value="mid">Mid Cap ($2B - $10B)</SelectItem>
                 <SelectItem value="large">Large Cap (&gt; $10B)</SelectItem>
@@ -184,7 +185,7 @@ export function FilterSection({ onFilterChange, isLoading }: FilterSectionProps)
                 <SelectValue placeholder="Select Sector" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Sectors</SelectItem>
+                <SelectItem value="all_sectors">All Sectors</SelectItem>
                 {sectors.map((sector) => (
                   <SelectItem key={sector} value={sector}>{sector}</SelectItem>
                 ))}

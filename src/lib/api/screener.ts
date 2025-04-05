@@ -6,7 +6,7 @@ export interface ScreenerParams {
   maxPrice?: number;
   minVolume?: number;
   maxVolume?: number;
-  marketCap?: string; // small, mid, large
+  marketCap?: string; // small, mid, large, any
   sector?: string;
   above50dma?: boolean;
   below50dma?: boolean;
@@ -46,7 +46,7 @@ const mapParamsToApiParams = (params: ScreenerParams) => {
   };
   
   // Map market cap to appropriate ranges
-  if (params.marketCap) {
+  if (params.marketCap && params.marketCap !== 'any') {
     switch(params.marketCap) {
       case 'small':
         apiParams.market_cap_min = 300000000;
@@ -67,7 +67,7 @@ const mapParamsToApiParams = (params: ScreenerParams) => {
   if (params.maxPrice) apiParams.max_price = params.maxPrice;
   if (params.minVolume) apiParams.min_volume = params.minVolume;
   if (params.maxVolume) apiParams.max_volume = params.maxVolume;
-  if (params.sector) apiParams.sector = params.sector;
+  if (params.sector && params.sector !== 'all_sectors') apiParams.sector = params.sector;
   if (params.sortBy) {
     // Use the sortBy value directly without prefixing with market_
     apiParams.sort = params.sortBy;

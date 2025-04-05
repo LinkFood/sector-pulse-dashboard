@@ -9,17 +9,16 @@ import DebugInfo from "@/components/DebugInfo";
 import { 
   fetchMarketIndices, 
   fetchSectorPerformance, 
-  fetchWatchlistData,
   getApiKey
 } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { WatchlistProvider } from "@/contexts/WatchlistContext";
 
 const Index = () => {
   const [indices, setIndices] = useState([]);
   const [sectors, setSectors] = useState([]);
-  const [watchlist, setWatchlist] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
 
@@ -55,15 +54,6 @@ const Index = () => {
         } catch (error) {
           console.error("Failed to fetch sectors:", error);
           toast.error("Failed to load sector performance data");
-        }
-        
-        try {
-          const watchlistData = await fetchWatchlistData([]);
-          console.log("Watchlist data:", watchlistData);
-          setWatchlist(watchlistData);
-        } catch (error) {
-          console.error("Failed to fetch watchlist:", error);
-          toast.error("Failed to load watchlist data");
         }
       } catch (error) {
         console.error("Error in main fetch operation:", error);
@@ -111,9 +101,16 @@ const Index = () => {
                 <MarketIndicesCard indices={indices} />
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <SectorHeatmap sectors={sectors} className="lg:col-span-2" />
-                  <WatchlistCard watchlist={watchlist} className="lg:col-span-1" />
+                  <WatchlistProvider>
+                    {/* The default watchlist will be used here */}
+                    <WatchlistCard 
+                      watchlistId="default" 
+                      className="lg:col-span-1" 
+                      isCompact={true}
+                    />
+                  </WatchlistProvider>
                 </div>
-                {(!indices.length || !sectors.length || !watchlist.length) && (
+                {(!indices.length || !sectors.length) && (
                   <div className="bg-muted p-6 rounded-lg text-center mt-4">
                     <h3 className="text-lg font-semibold mb-2">Data Fetch Issue</h3>
                     <p className="mb-4">

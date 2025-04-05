@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Card, 
@@ -40,8 +39,8 @@ export function FilterSection({ onFilterChange, isLoading }: FilterSectionProps)
     maxRsi: 100,
     limit: 20,
     page: 1,
-    sortBy: 'market_cap',
-    sortDirection: 'desc',
+    sortBy: 'ticker',
+    sortDirection: 'asc',
   });
 
   // Fetch sectors
@@ -77,14 +76,14 @@ export function FilterSection({ onFilterChange, isLoading }: FilterSectionProps)
       maxRsi: 100,
       limit: 20,
       page: 1,
-      sortBy: 'market_cap',
-      sortDirection: 'desc',
+      sortBy: 'ticker',
+      sortDirection: 'asc',
     });
     onFilterChange({
       limit: 20,
       page: 1,
-      sortBy: 'market_cap',
-      sortDirection: 'desc',
+      sortBy: 'ticker',
+      sortDirection: 'asc',
     });
   };
 

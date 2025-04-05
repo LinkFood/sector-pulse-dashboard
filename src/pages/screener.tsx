@@ -19,8 +19,8 @@ const ScreenerPage = () => {
   const [currentFilters, setCurrentFilters] = useState<ScreenerParams>({
     limit: 20,
     page: 1,
-    sortBy: 'market_cap',
-    sortDirection: 'desc',
+    sortBy: 'ticker',
+    sortDirection: 'asc',
   });
 
   // Debounced filter change function

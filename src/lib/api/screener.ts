@@ -69,6 +69,7 @@ const mapParamsToApiParams = (params: ScreenerParams) => {
   if (params.maxVolume) apiParams.max_volume = params.maxVolume;
   if (params.sector) apiParams.sector = params.sector;
   if (params.sortBy) {
+    // Use the sortBy value directly without prefixing with market_
     apiParams.sort = params.sortBy;
     if (params.sortDirection) apiParams.sort_direction = params.sortDirection;
   }

@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import { toast } from 'sonner';
 import { checkApiKey } from './config';
@@ -9,7 +8,7 @@ import {
   CACHE_TTL,
   updateApiUsageStats
 } from './cache';
-import { throttledRequest, REQUEST_PRIORITY } from './throttle';
+import { throttledRequest } from './throttle';
 
 // Initialize Axios instance with default configuration
 export const api = axios.create({
@@ -28,39 +27,21 @@ window.addEventListener('offline', () => {
   toast.warning('You are offline. Using cached data.');
 });
 
-// Enhanced API request wrapper with caching, throttling and error handling
+// Simplified API request wrapper optimized for unlimited API calls
 export const makeRequest = async <T>(
   url: string, 
   params: Record<string, any> = {},
   options: {
     cacheTTL?: number;
     forceRefresh?: boolean;
-    priority?: number;
-    tag?: string;
   } = {}
 ): Promise<T> => {
-  // Determine appropriate cache TTL based on URL pattern
-  let cacheTTL = options.cacheTTL;
-  if (!cacheTTL) {
-    if (url.includes('marketstatus')) {
-      cacheTTL = CACHE_TTL.MARKET_STATUS;
-    } else if (url.includes('snapshot') && url.includes('tickers')) {
-      cacheTTL = CACHE_TTL.MARKET_INDICES;
-    } else if (url.includes('aggs')) {
-      cacheTTL = CACHE_TTL.AGGREGATE_DATA;
-    } else {
-      cacheTTL = CACHE_TTL.MARKET_INDICES; // Default
-    }
-  }
-  
-  // Generate cache key
   const cacheKey = getCacheKey(url, params);
   
-  // Check cache first if not forcing refresh
-  if (!options.forceRefresh) {
+  // Still check cache first if not forcing refresh and if we're offline
+  if (!options.forceRefresh || !isOnline) {
     const cachedData = getLocalCache<T>(cacheKey);
     if (cachedData) {
-      console.log('Using cached data for:', url);
       return cachedData.data;
     }
   }
@@ -71,17 +52,11 @@ export const makeRequest = async <T>(
     return Promise.reject(new Error('Offline and data not cached'));
   }
   
-  // Wrap the actual request in a throttler
+  // With unlimited API calls, we don't need complex throttling
   return throttledRequest(async () => {
     try {
       const apiKey = checkApiKey();
       
-      // Debug logs to see what's being sent
-      console.log('API Request:', {
-        url,
-        params: { ...params, apiKey: '****' }
-      });
-
       // Make the request with apiKey properly formatted in the query parameters
       const response = await api.get<T>(url, {
         params: {
@@ -89,14 +64,13 @@ export const makeRequest = async <T>(
           apiKey,
         },
       });
-
-      console.log('API Response Status:', response.status);
       
-      // Update API usage statistics
+      // Update API usage statistics (keeping this for monitoring purposes)
       updateApiUsageStats(url);
       
-      // Cache successful responses
+      // Still cache responses for offline support
       if (response.status === 200 && response.data) {
+        const cacheTTL = options.cacheTTL || CACHE_TTL.MARKET_INDICES;
         setLocalCache(cacheKey, response.data, cacheTTL);
       }
       
@@ -105,25 +79,16 @@ export const makeRequest = async <T>(
       console.error('API Error:', error);
       
       if (axios.isAxiosError(error)) {
-        console.error('Axios Error Details:', {
-          status: error.response?.status,
-          data: error.response?.data,
-          config: error.config
-        });
-
         if (error.response?.status === 401 || error.response?.status === 403) {
           toast.error('API Key Error: Your API key is invalid or has expired.');
-        } else if (error.response?.status === 429) {
-          toast.error('Rate limit exceeded. Please try again later.');
         } else {
           toast.error(`API Error: ${error.message}. Check console for details.`);
         }
         
-        // Try to return cached data as fallback even if it's expired
-        // Fix: Remove the second parameter which is causing the TypeScript error
+        // Try to return cached data as fallback
         const cachedData = getLocalCache<T>(cacheKey);
         if (cachedData) {
-          toast.info('Using stale cached data as fallback');
+          toast.info('Using cached data as fallback');
           return cachedData.data;
         }
       } else {
@@ -131,37 +96,23 @@ export const makeRequest = async <T>(
       }
       throw error;
     }
-  }, options.priority || REQUEST_PRIORITY.MEDIUM);
+  });
 };
 
-// Batch multiple requests into a single request where possible
+// Optimized batch request function for unlimited API calls
 export const batchRequests = async <T>(
   requests: Array<{ url: string; params: Record<string, any> }>,
   options: {
     cacheTTL?: number;
     forceRefresh?: boolean;
-    priority?: number;
   } = {}
 ): Promise<T[]> => {
-  // For now, just execute them in sequence through the throttler
-  // In future, this could be enhanced to use the Polygon batch API if available
-  const results: T[] = [];
-  
-  for (const request of requests) {
-    try {
-      const result = await makeRequest<T>(
-        request.url,
-        request.params,
-        options
-      );
-      results.push(result);
-    } catch (error) {
-      console.error('Error in batched request:', error);
-      results.push(null as unknown as T);
-    }
-  }
-  
-  return results;
+  // With unlimited API calls, we can make parallel requests
+  return Promise.all(
+    requests.map(request => 
+      makeRequest<T>(request.url, request.params, options)
+    )
+  );
 };
 
 // Function to prefetch data that will likely be needed soon
@@ -172,11 +123,7 @@ export const prefetchData = <T>(
     cacheTTL?: number;
   } = {}
 ): void => {
-  makeRequest<T>(url, params, { 
-    ...options,
-    priority: REQUEST_PRIORITY.LOW,
-    forceRefresh: false
-  })
+  makeRequest<T>(url, params, options)
     .catch(error => {
       // Silently fail for prefetch requests
       console.log('Prefetch failed:', error);

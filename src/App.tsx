@@ -12,25 +12,31 @@ import ProfilePage from './pages/Profile';
 import BreadthPage from './pages/breadth';
 import { AuthProvider } from './context/AuthContext';
 import { Toaster } from './components/ui/sonner';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Create a client
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/watchlist" element={<WatchlistPage />} />
-          <Route path="/api-config" element={<ApiConfig />} />
-          <Route path="/stock/:symbol" element={<StockDetailsPage />} />
-          <Route path="/technicals/:symbol" element={<TechnicalAnalysisPage />} />
-          <Route path="/auth/login" element={<Login />} />
-          <Route path="/auth/signup" element={<Signup />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/breadth" element={<BreadthPage />} />
-        </Routes>
-      </Router>
-      <Toaster />
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/watchlist" element={<WatchlistPage />} />
+            <Route path="/api-config" element={<ApiConfig />} />
+            <Route path="/stock/:symbol" element={<StockDetailsPage />} />
+            <Route path="/technicals/:symbol" element={<TechnicalAnalysisPage />} />
+            <Route path="/auth/login" element={<Login />} />
+            <Route path="/auth/signup" element={<Signup />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/breadth" element={<BreadthPage />} />
+          </Routes>
+        </Router>
+        <Toaster />
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 

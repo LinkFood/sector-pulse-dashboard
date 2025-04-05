@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Info } from 'lucide-react';
 import {
@@ -23,7 +22,6 @@ export const AdvancingDeclining: React.FC<AdvancingDecliningProps> = ({
   unchanged,
   total
 }) => {
-  // Calculate percentages
   const advancingPercent = Math.round((advancing / total) * 100);
   const decliningPercent = Math.round((declining / total) * 100);
   const unchangedPercent = Math.round((unchanged / total) * 100);
@@ -68,7 +66,6 @@ export const AdvancingDeclining: React.FC<AdvancingDecliningProps> = ({
               />
               <Bar 
                 dataKey="value" 
-                fill="#8884d8"
                 barSize={30}
                 label={{ position: 'right', formatter: (value) => `${value}` }}
               >

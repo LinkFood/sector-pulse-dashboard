@@ -1,59 +1,74 @@
 
-import React from "react";
-import { Routes, Route } from "react-router-dom";
-import Index from "@/pages/Index";
-import Profile from "@/pages/Profile";
-import Technicals from "@/pages/technicals";
-import NotFound from "@/pages/NotFound";
-import Login from "@/pages/auth/Login";
-import Signup from "@/pages/auth/Signup";
-import ApiConfig from "@/pages/api-config";
-import Volume from "@/pages/volume";
-import { ThemeProvider } from "@/context/ThemeContext";
-import Breadth from "@/pages/breadth";
-import Watchlist from "@/pages/watchlist";
-import Stock from "@/pages/stock";
-import Sectors from "@/pages/sectors";
-import Screener from "@/pages/screener";
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import MobileNav from "@/components/layout/mobile-nav";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from 'next-themes';
+import { createOptimizedQueryClient } from './lib/api/cache';
+import { AuthProvider } from './context/AuthContext';
+import { WatchlistProvider } from './contexts/WatchlistContext';
+import { DataSourceProvider } from './context/DataSourceContext';
+import { Toaster } from './components/ui/sonner';
+import HomePage from './pages/Index';
+import StockPage from './pages/stock';
+import NotFoundPage from './pages/NotFound';
+import FilterPage from './pages/filters';
+import SectorsPage from './pages/sectors';
+import BreadthPage from './pages/breadth';
+import ScreenerPage from './pages/screener';
+import TechnicalsPage from './pages/technicals';
+import WatchlistPage from './pages/watchlist';
+import VolumePage from './pages/volume';
+import ProfilePage from './pages/Profile';
+import ApiConfigPage from './pages/api-config';
+import LoginPage from './pages/auth/Login';
+import SignupPage from './pages/auth/Signup';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 function App() {
-  const isMobile = useIsMobile();
-  
+  const queryClient = createOptimizedQueryClient();
+
   return (
-    <ThemeProvider>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/technicals" element={<Technicals />} />
-        <Route path="/volume" element={<Volume />} />
-        <Route path="/breadth" element={<Breadth />} />
-        <Route path="/watchlist" element={<Watchlist />} />
-        <Route path="/stock/:symbol" element={<Stock />} />
-        <Route path="/sectors" element={<Sectors />} />
-        <Route path="/screener" element={<Screener />} />
-        
-        <Route path="/auth/login" element={<Login />} />
-        <Route path="/auth/signup" element={<Signup />} />
-        
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/api-config" element={<ApiConfig />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      
-      {/* Add Mobile Navigation */}
-      {isMobile && <MobileNav />}
-      
-      {/* Add bottom padding on mobile to account for the navigation bar */}
-      {isMobile && <div className="h-16" />}
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <WatchlistProvider>
+            <DataSourceProvider>
+              <Router>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/stock/:symbol" element={<StockPage />} />
+                  <Route path="/sectors" element={<SectorsPage />} />
+                  <Route path="/breadth" element={<BreadthPage />} />
+                  <Route path="/filters" element={<FilterPage />} />
+                  <Route path="/screener" element={<ScreenerPage />} />
+                  <Route path="/technicals" element={<TechnicalsPage />} />
+                  <Route path="/volume" element={<VolumePage />} />
+                  <Route 
+                    path="/watchlist" 
+                    element={
+                      <ProtectedRoute>
+                        <WatchlistPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/profile" 
+                    element={
+                      <ProtectedRoute>
+                        <ProfilePage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route path="/api-config" element={<ApiConfigPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/signup" element={<SignupPage />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </Router>
+              <Toaster />
+            </DataSourceProvider>
+          </WatchlistProvider>
+        </AuthProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }

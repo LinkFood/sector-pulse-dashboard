@@ -15,10 +15,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { PolygonSnapshotResponse } from "@/lib/api/types";
+import { MockDataBanner } from "@/components/ui/mock-data-banner";
+import { DataSourceInfo } from "@/components/debug/data-source-info";
 
 const SectorsPage = () => {
   const isMobile = useIsMobile();
   const [timeframe, setTimeframe] = useState<string>("1M");
+  const [showDebugInfo, setShowDebugInfo] = useState(false);
   
   // Update the useApiData hook to use PolygonSnapshotResponse as the expected API response type
   const { data: sectorData, isLoading, error } = useApiData<PolygonSnapshotResponse>(
@@ -75,6 +78,10 @@ const SectorsPage = () => {
     setTimeframe(newTimeframe);
   };
   
+  const toggleDebugInfo = () => {
+    setShowDebugInfo(!showDebugInfo);
+  };
+  
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -126,11 +133,25 @@ const SectorsPage = () => {
               Analyze market sectors, industry groups, and rotation patterns
             </p>
           </div>
-          <TimeframeSelector 
-            selectedTimeframe={timeframe}
-            onTimeframeChange={handleTimeframeChange}
-          />
+          <div className="flex items-center gap-2">
+            <TimeframeSelector 
+              selectedTimeframe={timeframe}
+              onTimeframeChange={handleTimeframeChange}
+            />
+            <button 
+              onClick={toggleDebugInfo}
+              className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded hover:bg-muted/80 transition-colors"
+            >
+              {showDebugInfo ? 'Hide Debug' : 'Show Debug'}
+            </button>
+          </div>
         </div>
+        
+        {/* Mock Data Banner */}
+        <MockDataBanner />
+        
+        {/* Debug Information */}
+        {showDebugInfo && <DataSourceInfo />}
         
         {renderContent()}
       </div>

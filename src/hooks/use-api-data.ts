@@ -1,8 +1,8 @@
-
 import { useQuery, useMutation, useQueryClient, QueryKey } from '@tanstack/react-query';
 import { makeRequest, prefetchData, batchRequests } from '@/lib/api/client';
 import { useState, useEffect } from 'react';
 import { CACHE_TTL } from '@/lib/api/cache';
+import { useDataSource } from '@/context/DataSourceContext';
 
 // Hook for fetching data with optimized settings for unlimited API access
 export function useApiData<T>(
@@ -18,11 +18,17 @@ export function useApiData<T>(
     select?: (data: T) => any;
   } = {}
 ) {
+  // Get dataSource context to register our data source
+  const { registerDataSource } = useDataSource();
+  const queryKeyString = Array.isArray(queryKey) ? queryKey.join('-') : String(queryKey);
+  
   // Shorter stale times since we have unlimited API calls
   const cacheTTL = options.cacheTTL || getCacheTTLForEndpoint(url, queryKey);
   const staleTime = options.staleTime !== undefined ? options.staleTime : Math.min(cacheTTL, 60000); // Max 1 minute stale time
 
-  return useQuery({
+  const originalSelect = options.select;
+
+  const query = useQuery({
     queryKey,
     queryFn: async () => {
       return makeRequest<T>(url, params, {
@@ -33,8 +39,72 @@ export function useApiData<T>(
     retry: options.retry !== undefined ? options.retry : 2, // Increased retries since we have unlimited API calls
     enabled: options.enabled !== undefined ? options.enabled : true,
     refetchInterval: options.refetchInterval || 60000, // Default to 1 minute refetch
-    select: options.select,
+    select: (data: T) => {
+      if (!data) {
+        // If no data, mark as mock and return
+        registerDataSource(queryKeyString, 'mock', url);
+        return originalSelect ? originalSelect(data) : data;
+      }
+
+      // Check if this is real API data or mock data
+      const isMockData = detectMockData(data);
+      
+      // Register the data source
+      registerDataSource(
+        queryKeyString, 
+        isMockData ? 'mock' : 'api', 
+        url
+      );
+      
+      console.log(`[DataSource] ${queryKeyString} using ${isMockData ? 'MOCK' : 'API'} data from ${url}`);
+      
+      // Call the original select function if provided
+      return originalSelect ? originalSelect(data) : data;
+    }
   });
+
+  return query;
+}
+
+// Helper function to detect if data is mock
+function detectMockData<T>(data: T): boolean {
+  // Check for common patterns in our mock data
+  
+  // Check for sectors mock data
+  if (Array.isArray(data) && data.length > 0 && 'sector' in data[0] && 'performance' in data[0]) {
+    // Check if all sectors have the same performance or if they match our hardcoded values
+    const hardcodedValues = [2.5, 0.8, -0.5, 1.2, 0.3, -0.2, -1.5, 0.7, -0.6, -1.0, -0.9];
+    const performances = data.map((item: any) => item.performance);
+    
+    // If the first few values match our hardcoded mock data
+    if (performances.slice(0, 3).join(',') === hardcodedValues.slice(0, 3).join(',')) {
+      return true;
+    }
+  }
+  
+  // Check for fallbacks in API responses with custom properties
+  if (typeof data === 'object' && data !== null) {
+    if ('sectors' in data) {
+      const sectors = (data as any).sectors;
+      if (Array.isArray(sectors) && sectors.length > 0) {
+        // Check if sectors data matches our common mock data patterns
+        const firstSector = sectors[0];
+        if (firstSector && 'sector' in firstSector && 'performance' in firstSector) {
+          // Check for Technology with exactly 2.5% performance (our mock value)
+          if (firstSector.sector === 'Technology' && firstSector.performance === 2.5) {
+            return true;
+          }
+        }
+      }
+    }
+  }
+  
+  // If the data is very simple or has default-looking values
+  if (typeof data === 'object' && data !== null && Object.keys(data).length === 0) {
+    return true;
+  }
+  
+  return false;
 }
 
 // Hook for prefetching data that will likely be needed soon - optimized for unlimited API calls
